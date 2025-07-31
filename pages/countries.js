@@ -1,0 +1,584 @@
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import Layout from '../components/Layout';
+import DataTable from '../components/DataTable';
+import Swal from 'sweetalert2';
+import { fetchCountries, createCountryWithImage, updateCountryWithImage, deleteCountry, fetchLanguages } from '../context/apiHelpers';
+
+export default function Countries() {
+  const router = useRouter();
+  const [showModal, setShowModal] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [countries, setCountries] = useState([]);
+  const [languages, setLanguages] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedMapImage, setSelectedMapImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [mapImagePreview, setMapImagePreview] = useState(null);
+  const [formData, setFormData] = useState({
+    language_id: '',
+    country_name: '',
+    country_code: '',
+    status: 'active'
+  });
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState(null);
+
+  // Fetch countries and languages on component mount
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async (page = 1) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Fetch both countries and languages
+      const [countriesResponse, languagesResponse] = await Promise.all([
+        fetchCountries(page, 10),
+        fetchLanguages()
+      ]);
+
+      if (countriesResponse.success) {
+        setCountries(countriesResponse.data || []);
+        setPagination(countriesResponse.pagination || null);
+      } else {
+        setError(countriesResponse.message || 'Failed to load countries');
+      }
+
+      if (languagesResponse.success) {
+        setLanguages(languagesResponse.data || []);
+      }
+    } catch (err) {
+      console.error('Error loading data:', err);
+      setError(err.message || 'Failed to load data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const columns = [
+    {
+      key: 'image',
+      label: 'Flag',
+      render: (value) => (
+        <div className="flex items-center">
+          {value ? (
+            <img 
+              src={value} 
+              alt="Country flag" 
+              className="w-8 h-6 object-cover rounded border"
+            />
+          ) : (
+            <div className="w-8 h-6 bg-gray-200 rounded border flex items-center justify-center">
+              <span className="text-xs text-gray-500">No flag</span>
+            </div>
+          )}
+        </div>
+      )
+    },
+    {
+      key: 'map_image',
+      label: 'Map',
+      render: (value) => (
+        <div className="flex items-center">
+          {value ? (
+            <img 
+              src={value} 
+              alt="Country map" 
+              className="w-8 h-6 object-cover rounded border"
+            />
+          ) : (
+            <div className="w-8 h-6 bg-gray-200 rounded border flex items-center justify-center">
+              <span className="text-xs text-gray-500">No map</span>
+            </div>
+          )}
+        </div>
+      )
+    },
+    {
+      key: 'country_name',
+      label: 'Country Name',
+      render: (value) => (
+        <div className="font-medium text-gray-900">{value || ''}</div>
+      )
+    },
+    {
+      key: 'language_id',
+      label: 'Language',
+      render: (value) => {
+        if (!value) return <div>No Language</div>;
+        return (
+          <div>
+            <div className="font-medium text-gray-900">{value.language_name}</div>
+            <div className="text-sm text-gray-500">Code: {value.language_code}</div>
+          </div>
+        );
+      }
+    },
+    {
+      key: 'country_code',
+      label: 'Country Code',
+      render: (value) => (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+          {value}
+        </span>
+      )
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      render: (value) => (
+        <span className={`status-${value}`}>
+          {value === 'active' ? 'Active' : 'Inactive'}
+        </span>
+      )
+    },
+    {
+      key: 'createdAt',
+      label: 'Created At',
+      render: (value) => new Date(value).toLocaleDateString()
+    }
+  ];
+
+  const handleImageChange = (e, type) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        Swal.fire('Error!', 'Please select an image file.', 'error');
+        return;
+      }
+      
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        Swal.fire('Error!', 'Image size should be less than 5MB.', 'error');
+        return;
+      }
+
+      if (type === 'flag') {
+        setSelectedImage(file);
+        // Create preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setImagePreview(e.target.result);
+        };
+        reader.readAsDataURL(file);
+      } else if (type === 'map') {
+        setSelectedMapImage(file);
+        // Create preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setMapImagePreview(e.target.result);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  };
+
+  const clearImage = (type) => {
+    if (type === 'flag') {
+      setSelectedImage(null);
+      setImagePreview(null);
+    } else if (type === 'map') {
+      setSelectedMapImage(null);
+      setMapImagePreview(null);
+    }
+  };
+
+  const clearAllImages = () => {
+    setSelectedImage(null);
+    setSelectedMapImage(null);
+    setImagePreview(null);
+    setMapImagePreview(null);
+  };
+
+  const handleAdd = () => {
+    setEditingItem(null);
+    setFormData({
+      language_id: '',
+      country_name: '',
+      country_code: '',
+      status: 'active'
+    });
+    clearAllImages();
+    setShowModal(true);
+  };
+
+  const handleEdit = (item) => {
+    setEditingItem(item);
+    setFormData({
+      language_id: item.language_id,
+      country_name: item.country_name,
+      country_code: item.country_code,
+      status: item.status
+    });
+    setSelectedImage(null);
+    setSelectedMapImage(null);
+    setImagePreview(item.image || null);
+    setMapImagePreview(item.map_image || null);
+    setShowModal(true);
+  };
+
+  const handlePageChange = async (page) => {
+    setCurrentPage(page);
+    await loadData(page);
+  };
+
+  const handleDelete = async (item) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: `You are about to delete "${item.country_name}". This action cannot be undone.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const response = await deleteCountry(item._id);
+        if (response.success) {
+          // Reload current page after deletion
+          await loadData(currentPage);
+          Swal.fire('Deleted!', 'Country has been deleted.', 'success');
+        } else {
+          Swal.fire('Error!', response.message || 'Failed to delete country', 'error');
+        }
+      } catch (err) {
+        console.error('Error deleting country:', err);
+        Swal.fire('Error!', err.message || 'Failed to delete country', 'error');
+      }
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      let response;
+      
+      // Create FormData for multipart/form-data
+      const formDataToSend = new FormData();
+      formDataToSend.append('language_id', formData.language_id);
+      formDataToSend.append('country_name', formData.country_name);
+      formDataToSend.append('country_code', formData.country_code);
+      formDataToSend.append('status', formData.status);
+      
+      console.log('Form data being sent:', {
+        language_id: formData.language_id,
+        country_name: formData.country_name,
+        country_code: formData.country_code,
+        status: formData.status,
+        hasFlagImage: !!selectedImage,
+        hasMapImage: !!selectedMapImage
+      });
+      
+      if (selectedImage) {
+        console.log('Adding flag image to FormData:', selectedImage.name, selectedImage.size);
+        formDataToSend.append('image', selectedImage);
+      }
+      
+      if (selectedMapImage) {
+        console.log('Adding map image to FormData:', selectedMapImage.name, selectedMapImage.size);
+        formDataToSend.append('map_image', selectedMapImage);
+      }
+      
+      if (editingItem) {
+        // Update existing item
+        console.log('Updating country with ID:', editingItem._id);
+        response = await updateCountryWithImage(editingItem._id, formDataToSend);
+        if (response.success) {
+          setCountries(countries.map(country => 
+            country._id === editingItem._id 
+              ? { 
+                  ...country, 
+                  ...formData, 
+                  image: response.data.image || country.image,
+                  map_image: response.data.map_image || country.map_image
+                }
+              : country
+          ));
+          Swal.fire('Updated!', 'Country has been updated.', 'success');
+        }
+      } else {
+        // Add new item
+        console.log('Creating new country');
+        response = await createCountryWithImage(formDataToSend);
+        if (response.success) {
+          setCountries([response.data, ...countries]);
+          Swal.fire('Created!', 'Country has been created.', 'success');
+        }
+      }
+      
+      if (response.success) {
+        setShowModal(false);
+        clearAllImages();
+        // Reload current page after successful save
+        await loadData(currentPage);
+      } else {
+        console.error('API response error:', response);
+        Swal.fire('Error!', response.message || 'Failed to save country', 'error');
+      }
+    } catch (err) {
+      console.error('Error saving country:', err);
+      console.error('Error details:', {
+        message: err.message,
+        code: err.code,
+        response: err.response?.data
+      });
+      Swal.fire('Error!', err.message || 'Failed to save country', 'error');
+    }
+  };
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading countries...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="text-red-600 mb-4">
+              <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <button 
+              onClick={loadData}
+              className="btn-primary"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout>
+      <DataTable
+        data={countries}
+        columns={columns}
+        title="Countries"
+        onAdd={handleAdd}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        searchPlaceholder="Search countries..."
+        pagination={pagination}
+        onPageChange={handlePageChange}
+        currentPage={currentPage}
+      />
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <form onSubmit={handleSubmit}>
+                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    {editingItem ? 'Edit Country' : 'Add New Country'}
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    {/* Flag Image Upload */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Country Flag
+                      </label>
+                      <div className="flex items-center space-x-4">
+                        <div className="flex-shrink-0">
+                          {imagePreview ? (
+                            <img
+                              src={imagePreview}
+                              alt="Flag Preview"
+                              className="w-16 h-12 object-cover rounded border"
+                            />
+                          ) : (
+                            <div className="w-16 h-12 bg-gray-200 rounded border flex items-center justify-center">
+                              <span className="text-xs text-gray-500">No flag</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleImageChange(e, 'flag')}
+                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            Max size: 5MB. Supported formats: JPG, PNG, GIF
+                          </p>
+                        </div>
+                        {imagePreview && (
+                          <button
+                            type="button"
+                            onClick={() => clearImage('flag')}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Map Image Upload */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Country Map
+                      </label>
+                      <div className="flex items-center space-x-4">
+                        <div className="flex-shrink-0">
+                          {mapImagePreview ? (
+                            <img
+                              src={mapImagePreview}
+                              alt="Map Preview"
+                              className="w-16 h-12 object-cover rounded border"
+                            />
+                          ) : (
+                            <div className="w-16 h-12 bg-gray-200 rounded border flex items-center justify-center">
+                              <span className="text-xs text-gray-500">No map</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleImageChange(e, 'map')}
+                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            Max size: 5MB. Supported formats: JPG, PNG, GIF
+                          </p>
+                        </div>
+                        {mapImagePreview && (
+                          <button
+                            type="button"
+                            onClick={() => clearImage('map')}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Language
+                      </label>
+                      <select
+                        value={formData.language_id}
+                        onChange={(e) => setFormData({...formData, language_id: e.target.value})}
+                        className="input-field text-gray-700"
+                        required
+                      >
+                        <option value="">Select Language</option>
+                        {languages.map(lang => (
+                          <option key={lang._id} value={lang._id}>
+                            {lang.language_name} ({lang.language_code})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Country Name
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.country_name}
+                        onChange={(e) => setFormData({...formData, country_name: e.target.value})}
+                        className="input-field text-gray-700"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Country Code
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.country_code}
+                        onChange={(e) => setFormData({...formData, country_code: e.target.value.toUpperCase()})}
+                        className="input-field text-gray-700"
+                        maxLength="3"
+                        placeholder="e.g., USA, IND, GBR"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Status
+                      </label>
+                      <select
+                        value={formData.status}
+                        onChange={(e) => setFormData({...formData, status: e.target.value})}
+                        className="input-field text-gray-700"
+                      >
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                  <button
+                    type="submit"
+                    className="btn-primary w-full sm:w-auto sm:ml-3"
+                  >
+                    {editingItem ? 'Update' : 'Create'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowModal(false);
+                      clearAllImages();
+                    }}
+                    className="btn-secondary w-full sm:w-auto mt-3 sm:mt-0"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+    </Layout>
+  );
+} 
