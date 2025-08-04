@@ -42,7 +42,10 @@ const TipTapEditor = ({ value, onChange, placeholder, className }) => {
 
   useEffect(() => {
     if (editor && value !== editor.getHTML()) {
+
       editor.commands.setContent(value || '');
+    } else {
+      editor?.commands?.insertContent(value);
     }
   }, [editor, value]);
 
@@ -312,14 +315,14 @@ const TipTapEditor = ({ value, onChange, placeholder, className }) => {
           </button>
         </div>
       )}
-      
+
       {/* Editor Content */}
       <div className="border border-t-0 border-gray-300 rounded-b-lg relative flex-1 overflow-hidden">
-        <EditorContent 
-          editor={editor} 
+        <EditorContent
+          editor={editor}
           className="h-full focus:outline-none overflow-y-auto"
         />
-        
+
         {/* Placeholder */}
         {!editor.getText() && (
           <div className="absolute top-4 left-4 text-gray-400 pointer-events-none">
