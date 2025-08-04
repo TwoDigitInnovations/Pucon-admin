@@ -23,7 +23,7 @@ export default function Countries() {
     country_code: '',
     status: 'active'
   });
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState(null);
@@ -37,7 +37,7 @@ export default function Countries() {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Fetch both countries and languages
       const [countriesResponse, languagesResponse] = await Promise.all([
         fetchCountries(page, 10),
@@ -69,9 +69,9 @@ export default function Countries() {
       render: (value) => (
         <div className="flex items-center">
           {value ? (
-            <img 
-              src={value} 
-              alt="Country flag" 
+            <img
+              src={value}
+              alt="Country flag"
               className="w-8 h-6 object-cover rounded border"
             />
           ) : (
@@ -88,9 +88,9 @@ export default function Countries() {
       render: (value) => (
         <div className="flex items-center">
           {value ? (
-            <img 
-              src={value} 
-              alt="Country map" 
+            <img
+              src={value}
+              alt="Country map"
               className="w-8 h-6 object-cover rounded border"
             />
           ) : (
@@ -154,7 +154,7 @@ export default function Countries() {
         Swal.fire('Error!', 'Please select an image file.', 'error');
         return;
       }
-      
+
       // Validate file size (5MB)
       if (file.size > 5 * 1024 * 1024) {
         Swal.fire('Error!', 'Image size should be less than 5MB.', 'error');
@@ -211,9 +211,12 @@ export default function Countries() {
   };
 
   const handleEdit = (item) => {
+    console.log(item);
+    console.log(item?.language_id.language_name, (item?.language_id.language_code));
+
     setEditingItem(item);
     setFormData({
-      language_id: item.language_id,
+      language_id: item.language_id._id,
       country_name: item.country_name,
       country_code: item.country_code,
       status: item.status
@@ -261,17 +264,17 @@ export default function Countries() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       let response;
-      
+
       // Create FormData for multipart/form-data
       const formDataToSend = new FormData();
       formDataToSend.append('language_id', formData.language_id);
       formDataToSend.append('country_name', formData.country_name);
       formDataToSend.append('country_code', formData.country_code);
       formDataToSend.append('status', formData.status);
-      
+
       console.log('Form data being sent:', {
         language_id: formData.language_id,
         country_name: formData.country_name,
@@ -280,30 +283,30 @@ export default function Countries() {
         hasFlagImage: !!selectedImage,
         hasMapImage: !!selectedMapImage
       });
-      
+
       if (selectedImage) {
         console.log('Adding flag image to FormData:', selectedImage.name, selectedImage.size);
         formDataToSend.append('image', selectedImage);
       }
-      
+
       if (selectedMapImage) {
         console.log('Adding map image to FormData:', selectedMapImage.name, selectedMapImage.size);
         formDataToSend.append('map_image', selectedMapImage);
       }
-      
+
       if (editingItem) {
         // Update existing item
         console.log('Updating country with ID:', editingItem._id);
         response = await updateCountryWithImage(editingItem._id, formDataToSend);
         if (response.success) {
-          setCountries(countries.map(country => 
-            country._id === editingItem._id 
-              ? { 
-                  ...country, 
-                  ...formData, 
-                  image: response.data.image || country.image,
-                  map_image: response.data.map_image || country.map_image
-                }
+          setCountries(countries.map(country =>
+            country._id === editingItem._id
+              ? {
+                ...country,
+                ...formData,
+                image: response.data.image || country.image,
+                map_image: response.data.map_image || country.map_image
+              }
               : country
           ));
           Swal.fire('Updated!', 'Country has been updated.', 'success');
@@ -317,7 +320,7 @@ export default function Countries() {
           Swal.fire('Created!', 'Country has been created.', 'success');
         }
       }
-      
+
       if (response.success) {
         setShowModal(false);
         clearAllImages();
@@ -362,7 +365,7 @@ export default function Countries() {
               </svg>
             </div>
             <p className="text-gray-600 mb-4">{error}</p>
-            <button 
+            <button
               onClick={loadData}
               className="btn-primary"
             >
@@ -403,7 +406,7 @@ export default function Countries() {
                   <h3 className="text-lg font-medium text-gray-900 mb-4">
                     {editingItem ? 'Edit Country' : 'Add New Country'}
                   </h3>
-                  
+
                   <div className="space-y-4">
                     {/* Flag Image Upload */}
                     <div>
@@ -492,14 +495,15 @@ export default function Countries() {
                         )}
                       </div>
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Language
                       </label>
                       <select
                         value={formData.language_id}
-                        onChange={(e) => setFormData({...formData, language_id: e.target.value})}
+                        onChange={(e) =>
+                          setFormData({ ...formData, language_id: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       >
@@ -519,12 +523,12 @@ export default function Countries() {
                       <input
                         type="text"
                         value={formData.country_name}
-                        onChange={(e) => setFormData({...formData, country_name: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, country_name: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Country Code
@@ -532,21 +536,21 @@ export default function Countries() {
                       <input
                         type="text"
                         value={formData.country_code}
-                        onChange={(e) => setFormData({...formData, country_code: e.target.value.toUpperCase()})}
+                        onChange={(e) => setFormData({ ...formData, country_code: e.target.value.toUpperCase() })}
                         className="input-field text-gray-700"
                         maxLength="3"
                         placeholder="e.g., USA, IND, GBR"
                         required
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Status
                       </label>
                       <select
                         value={formData.status}
-                        onChange={(e) => setFormData({...formData, status: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                         className="input-field text-gray-700"
                       >
                         <option value="active">Active</option>
@@ -555,7 +559,7 @@ export default function Countries() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                   <button
                     type="submit"

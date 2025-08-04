@@ -22,7 +22,7 @@ export default function Categories() {
     name: '',
     status: 'active'
   });
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState(null);
@@ -36,7 +36,7 @@ export default function Categories() {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Fetch categories, super categories, and languages
       const [categoriesResponse, superCategoriesResponse, languagesResponse] = await Promise.all([
         fetchCategories(page, 10),
@@ -104,9 +104,9 @@ export default function Categories() {
       render: (value) => (
         <div className="flex items-center">
           {value ? (
-            <img 
-              src={value} 
-              alt="Category" 
+            <img
+              src={value}
+              alt="Category"
               className="w-12 h-12 object-cover rounded-lg border border-gray-200"
               onError={(e) => {
                 e.target.style.display = 'none';
@@ -179,9 +179,10 @@ export default function Categories() {
   };
 
   const handleEdit = (item) => {
+    console.log(item);
     setEditingItem(item);
     setFormData({
-      language_id: item.language_id || '',
+      language_id: item.language_id._id || '',
       super_category_id: item.super_category_id._id || item.super_category_id,
       name: item.name,
       status: item.status
@@ -227,17 +228,17 @@ export default function Categories() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       let response;
-      
+
       // Create FormData for multipart/form-data
       const formDataToSend = new FormData();
       formDataToSend.append('language_id', formData.language_id);
       formDataToSend.append('super_category_id', formData.super_category_id);
       formDataToSend.append('name', formData.name);
       formDataToSend.append('status', formData.status);
-      
+
       console.log('Form data being sent:', {
         language_id: formData.language_id,
         super_category_id: formData.super_category_id,
@@ -245,20 +246,20 @@ export default function Categories() {
         status: formData.status,
         hasImage: !!selectedImage
       });
-      
+
       if (selectedImage) {
         console.log('Adding image to FormData:', selectedImage.name, selectedImage.size);
         formDataToSend.append('image', selectedImage);
       } else {
         console.log('No image selected');
       }
-      
+
       if (editingItem) {
         // Update existing item
         response = await updateCategoryWithImage(editingItem._id, formDataToSend);
         if (response.success) {
-          setCategories(categories.map(cat => 
-            cat._id === editingItem._id 
+          setCategories(categories.map(cat =>
+            cat._id === editingItem._id
               ? { ...cat, ...formData, image: response.data.image || cat.image }
               : cat
           ));
@@ -273,7 +274,7 @@ export default function Categories() {
           Swal.fire('Created!', 'Category has been created.', 'success');
         }
       }
-      
+
       if (response.success) {
         setShowModal(false);
         clearImage();
@@ -312,7 +313,7 @@ export default function Categories() {
               </svg>
             </div>
             <p className="text-gray-600 mb-4">{error}</p>
-            <button 
+            <button
               onClick={loadData}
               className="btn-primary"
             >
@@ -353,7 +354,7 @@ export default function Categories() {
                   <h3 className="text-lg font-medium text-gray-900 mb-4">
                     {editingItem ? 'Edit Category' : 'Add New Category'}
                   </h3>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -361,7 +362,7 @@ export default function Categories() {
                       </label>
                       <select
                         value={formData.language_id}
-                        onChange={(e) => setFormData({...formData, language_id: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, language_id: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       >
@@ -380,7 +381,7 @@ export default function Categories() {
                       </label>
                       <select
                         value={formData.super_category_id}
-                        onChange={(e) => setFormData({...formData, super_category_id: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, super_category_id: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       >
@@ -392,7 +393,7 @@ export default function Categories() {
                         ))}
                       </select>
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Category Name
@@ -400,19 +401,19 @@ export default function Categories() {
                       <input
                         type="text"
                         value={formData.name}
-                        onChange={(e) => setFormData({...formData, name: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Status
                       </label>
                       <select
                         value={formData.status}
-                        onChange={(e) => setFormData({...formData, status: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                         className="input-field text-gray-700"
                       >
                         <option value="active">Active</option>
@@ -424,28 +425,30 @@ export default function Categories() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Image
                       </label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="input-field text-gray-700"
-                      />
-                      {imagePreview && (
-                        <div className="mt-2">
-                          <img src={imagePreview} alt="Preview" className="w-24 h-24 object-cover rounded-lg border border-gray-200" />
-                          <button
-                            type="button"
-                            onClick={clearImage}
-                            className="btn-secondary btn-sm mt-2"
-                          >
-                            Clear Image
-                          </button>
-                        </div>
-                      )}
+                      <div className="flex items-center space-x-4">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="input-field text-gray-700"
+                        />
+                        {imagePreview && (
+                          <div className="flex items-center space-x-2">
+                            <img src={imagePreview} alt="Preview" className="w-24 h-24 object-cover rounded-lg border border-gray-200" />
+                            <button
+                              type="button"
+                              onClick={clearImage}
+                              className="btn-secondary btn-sm mt-2"
+                            >
+                              Clear Image
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                   <button
                     type="submit"

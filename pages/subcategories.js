@@ -22,7 +22,7 @@ export default function SubCategories() {
     name: '',
     status: 'active'
   });
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState(null);
@@ -36,7 +36,7 @@ export default function SubCategories() {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Fetch sub categories, categories, and languages
       const [subCategoriesResponse, categoriesResponse, languagesResponse] = await Promise.all([
         fetchSubCategories(page, 10),
@@ -104,9 +104,9 @@ export default function SubCategories() {
       render: (value) => (
         <div className="flex items-center">
           {value ? (
-            <img 
-              src={value} 
-              alt="Sub Category" 
+            <img
+              src={value}
+              alt="Sub Category"
               className="w-12 h-12 object-cover rounded-lg border border-gray-200"
               onError={(e) => {
                 e.target.style.display = 'none';
@@ -227,17 +227,17 @@ export default function SubCategories() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       let response;
-      
+
       // Create FormData for multipart/form-data
       const formDataToSend = new FormData();
       formDataToSend.append('language_id', formData.language_id);
       formDataToSend.append('category_id', formData.category_id);
       formDataToSend.append('name', formData.name);
       formDataToSend.append('status', formData.status);
-      
+
       console.log('Form data being sent:', {
         language_id: formData.language_id,
         category_id: formData.category_id,
@@ -245,20 +245,20 @@ export default function SubCategories() {
         status: formData.status,
         hasImage: !!selectedImage
       });
-      
+
       if (selectedImage) {
         console.log('Adding image to FormData:', selectedImage.name, selectedImage.size);
         formDataToSend.append('image', selectedImage);
       } else {
         console.log('No image selected');
       }
-      
+
       if (editingItem) {
         // Update existing item
         response = await updateSubCategoryWithImage(editingItem._id, formDataToSend);
         if (response.success) {
-          setSubCategories(subCategories.map(subCat => 
-            subCat._id === editingItem._id 
+          setSubCategories(subCategories.map(subCat =>
+            subCat._id === editingItem._id
               ? { ...subCat, ...formData, image: response.data.image || subCat.image }
               : subCat
           ));
@@ -273,7 +273,7 @@ export default function SubCategories() {
           Swal.fire('Created!', 'Sub Category has been created.', 'success');
         }
       }
-      
+
       if (response.success) {
         setShowModal(false);
         clearImage();
@@ -312,7 +312,7 @@ export default function SubCategories() {
               </svg>
             </div>
             <p className="text-gray-600 mb-4">{error}</p>
-            <button 
+            <button
               onClick={loadData}
               className="btn-primary"
             >
@@ -353,7 +353,7 @@ export default function SubCategories() {
                   <h3 className="text-lg font-medium text-gray-900 mb-4">
                     {editingItem ? 'Edit Sub Category' : 'Add New Sub Category'}
                   </h3>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -361,7 +361,7 @@ export default function SubCategories() {
                       </label>
                       <select
                         value={formData.language_id}
-                        onChange={(e) => setFormData({...formData, language_id: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, language_id: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       >
@@ -380,7 +380,7 @@ export default function SubCategories() {
                       </label>
                       <select
                         value={formData.category_id}
-                        onChange={(e) => setFormData({...formData, category_id: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       >
@@ -392,7 +392,7 @@ export default function SubCategories() {
                         ))}
                       </select>
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Sub Category Name
@@ -400,19 +400,19 @@ export default function SubCategories() {
                       <input
                         type="text"
                         value={formData.name}
-                        onChange={(e) => setFormData({...formData, name: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Status
                       </label>
                       <select
                         value={formData.status}
-                        onChange={(e) => setFormData({...formData, status: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                         className="input-field text-gray-700"
                       >
                         <option value="active">Active</option>
@@ -447,7 +447,7 @@ export default function SubCategories() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                   <button
                     type="submit"

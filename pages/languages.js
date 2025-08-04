@@ -19,7 +19,7 @@ export default function Languages() {
     language_code: '',
     status: 'active'
   });
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState(null);
@@ -51,7 +51,7 @@ export default function Languages() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      
+
       if (!file.type.startsWith('image/')) {
         Swal.fire('Error!', 'Please select an image file', 'error');
         return;
@@ -86,9 +86,9 @@ export default function Languages() {
       render: (value) => (
         <div className="flex items-center">
           {value ? (
-            <img 
-              src={value} 
-              alt="Language" 
+            <img
+              src={value}
+              alt="Language"
               className="w-12 h-12 object-cover rounded-lg border border-gray-200"
               onError={(e) => {
                 e.target.style.display = 'none';
@@ -152,6 +152,8 @@ export default function Languages() {
   };
 
   const handleEdit = (item) => {
+    console.log(item?.image);
+    // return
     setEditingItem(item);
     setFormData({
       language_name: item.language_name,
@@ -159,7 +161,7 @@ export default function Languages() {
       status: item.status
     });
     setSelectedImage(null);
-    setImagePreview(item.image || null);
+    setImagePreview(item?.image || null);
     setShowModal(true);
   };
 
@@ -199,36 +201,36 @@ export default function Languages() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       let response;
-      
+
       // Create FormData for multipart/form-data
       const formDataToSend = new FormData();
       formDataToSend.append('language_name', formData.language_name);
       formDataToSend.append('language_code', formData.language_code);
       formDataToSend.append('status', formData.status);
-      
+
       console.log('Form data being sent:', {
         language_name: formData.language_name,
         language_code: formData.language_code,
         status: formData.status,
         hasImage: !!selectedImage
       });
-      
+
       if (selectedImage) {
         console.log('Adding image to FormData:', selectedImage.name, selectedImage.size);
         formDataToSend.append('image', selectedImage);
       } else {
         console.log('No image selected');
       }
-      
+
       if (editingItem) {
         // Update existing item
         response = await updateLanguageWithImage(editingItem._id, formDataToSend);
         if (response.success) {
-          setLanguages(languages.map(lang => 
-            lang._id === editingItem._id 
+          setLanguages(languages.map(lang =>
+            lang._id === editingItem._id
               ? { ...lang, ...formData, image: response.data.image || lang.image }
               : lang
           ));
@@ -243,7 +245,7 @@ export default function Languages() {
           Swal.fire('Created!', 'Language has been created.', 'success');
         }
       }
-      
+
       if (response.success) {
         setShowModal(false);
         clearImage();
@@ -282,7 +284,7 @@ export default function Languages() {
               </svg>
             </div>
             <p className="text-gray-600 mb-4">{error}</p>
-            <button 
+            <button
               onClick={loadLanguages}
               className="btn-primary"
             >
@@ -323,7 +325,7 @@ export default function Languages() {
                   <h3 className="text-lg font-medium text-gray-900 mb-4">
                     {editingItem ? 'Edit Language' : 'Add New Language'}
                   </h3>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -332,12 +334,12 @@ export default function Languages() {
                       <input
                         type="text"
                         value={formData.language_name}
-                        onChange={(e) => setFormData({...formData, language_name: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, language_name: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Language Code
@@ -345,21 +347,21 @@ export default function Languages() {
                       <input
                         type="text"
                         value={formData.language_code}
-                        onChange={(e) => setFormData({...formData, language_code: e.target.value.toLowerCase()})}
+                        onChange={(e) => setFormData({ ...formData, language_code: e.target.value.toLowerCase() })}
                         className="input-field text-gray-700"
                         maxLength="2"
                         placeholder="e.g., en, hi, es"
                         required
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Status
                       </label>
                       <select
                         value={formData.status}
-                        onChange={(e) => setFormData({...formData, status: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                         className="input-field text-gray-700"
                       >
                         <option value="active">Active</option>
@@ -371,32 +373,34 @@ export default function Languages() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Image
                       </label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="input-field text-gray-700"
-                      />
-                      {selectedImage && (
-                        <div className="mt-2 flex items-center">
-                          <img
-                            src={imagePreview}
-                            alt="Preview"
-                            className="w-16 h-16 object-cover rounded-md border border-gray-200"
-                          />
-                          <button
-                            type="button"
-                            onClick={clearImage}
-                            className="ml-2 btn-secondary btn-sm"
-                          >
-                            Clear Image
-                          </button>
-                        </div>
-                      )}
+                      <div className="flex items-center space-x-4">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="input-field text-gray-700"
+                        />
+                        {imagePreview && (
+                          <div className="flex items-center space-x-2">
+                            <img
+                              src={imagePreview}
+                              alt="Preview"
+                              className="w-16 h-16 object-cover rounded-md border border-gray-200"
+                            />
+                            <button
+                              type="button"
+                              onClick={clearImage}
+                              className="ml-2 btn-secondary btn-sm"
+                            >
+                              Clear Image
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                   <button
                     type="submit"

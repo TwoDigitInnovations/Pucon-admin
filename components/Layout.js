@@ -17,6 +17,18 @@ const Layout = ({ children }) => {
 
   const navigation = [
     {
+      name: 'Languages',
+      href: '/languages',
+      icon: <Languages className="w-5 h-5 mr-3" />, // Lucide Languages
+      current: router.pathname === '/languages'
+    },
+    {
+      name: 'Countries',
+      href: '/countries',
+      icon: <Globe className="w-5 h-5 mr-3" />, // Lucide Globe
+      current: router.pathname === '/countries'
+    },
+    {
       name: 'Super Categories',
       href: '/supercategories',
       icon: <Tag className="w-5 h-5 mr-3" />, // Lucide Tag
@@ -40,34 +52,21 @@ const Layout = ({ children }) => {
       icon: <FileText className="w-5 h-5 mr-3" />, // Lucide FileText
       current: router.pathname === '/content'
     },
-    {
-      name: 'Countries',
-      href: '/countries',
-      icon: <Globe className="w-5 h-5 mr-3" />, // Lucide Globe
-      current: router.pathname === '/countries'
-    },
-    {
-      name: 'Languages',
-      href: '/languages',
-      icon: <Languages className="w-5 h-5 mr-3" />, // Lucide Languages
-      current: router.pathname === '/languages'
-    }
   ];
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar - Fixed position with CSS class */}
-      <div className={`sidebar-fixed w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      }`}>
+      <div className={`sidebar-fixed w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}>
         <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
           <h1 className="text-xl font-bold text-gray-900">Pucon Admin</h1>
           <button
@@ -86,11 +85,10 @@ const Layout = ({ children }) => {
               <Link
                 key={item.name}
                 href={item.href}
-                className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
-                  item.current
-                    ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700'
-                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                }`}
+                className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${item.current
+                  ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700'
+                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                  }`}
                 onClick={() => setSidebarOpen(false)}
               >
                 {item.icon}
@@ -114,7 +112,7 @@ const Layout = ({ children }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            
+
             <div className="flex items-center space-x-4">
               <h2 className="text-lg font-semibold text-gray-900">
                 {navigation.find(item => item.current)?.name || 'Dashboard'}

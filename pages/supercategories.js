@@ -18,6 +18,7 @@ export default function SuperCategories() {
   const [imagePreview, setImagePreview] = useState(null);
   const [formData, setFormData] = useState({
     language_id: '',
+    country: '',
     name: '',
     description: '',
     status: 'active'
@@ -164,9 +165,12 @@ export default function SuperCategories() {
   };
 
   const handleEdit = (item) => {
+    console.log(item);
+
     setEditingItem(item);
     setFormData({
-      language_id: item.language_id,
+      language_id: item.language_id._id,
+      country: item.country,
       name: item.name,
       description: item.description,
       status: item.status
