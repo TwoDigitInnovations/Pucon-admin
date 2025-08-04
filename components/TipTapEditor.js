@@ -243,7 +243,7 @@ const TipTapEditor = ({ value, onChange, placeholder, className }) => {
           className={`p-2 rounded ${editor.isActive('blockquote') ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
           title="Quote"
         >
-          "
+          {`"`}
         </button>
         <button
           type="button"
