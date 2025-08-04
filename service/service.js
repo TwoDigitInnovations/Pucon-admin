@@ -1,6 +1,6 @@
 import axios from "axios";
-const ConstantsUrl = "http://localhost:3000/api/";
-//   const ConstantsUrl = "https://api.mandalaburger.com/api/";
+// const ConstantsUrl = "http://localhost:5000/api/";
+const ConstantsUrl = "https://api.travelertips.cl/api/";
 
 // export const ConstantsUrl = "";
 
