@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
 import DataTable from '../components/DataTable';
 import Swal from 'sweetalert2';
-import { fetchSuperCategories, createSuperCategoryWithImage, updateSuperCategoryWithImage, deleteSuperCategory, fetchLanguages } from '../context/apiHelpers';
+import { fetchSuperCategories, createSuperCategoryWithImage, updateSuperCategoryWithImage, deleteSuperCategory, fetchLanguages, fetchCountries } from '../context/apiHelpers';
 
 export default function SuperCategories() {
   const router = useRouter();
@@ -13,6 +13,7 @@ export default function SuperCategories() {
   const [error, setError] = useState(null);
   const [superCategories, setSuperCategories] = useState([]);
   const [languages, setLanguages] = useState([]);
+  const [countryList, setCountryList] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [formData, setFormData] = useState({
@@ -21,7 +22,7 @@ export default function SuperCategories() {
     description: '',
     status: 'active'
   });
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState(null);
@@ -35,11 +36,12 @@ export default function SuperCategories() {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Fetch both super categories and languages
-      const [superCategoriesResponse, languagesResponse] = await Promise.all([
+      const [superCategoriesResponse, languagesResponse, countryResponse] = await Promise.all([
         fetchSuperCategories(page, 10),
-        fetchLanguages()
+        fetchLanguages(),
+        fetchCountries()
       ]);
 
       if (superCategoriesResponse.success) {
@@ -51,6 +53,11 @@ export default function SuperCategories() {
 
       if (languagesResponse.success) {
         setLanguages(languagesResponse.data || []);
+      }
+
+      if (countryResponse.success) {
+        setCountryList(countryResponse.data || []);
+        console.log(countryResponse.data)
       }
     } catch (err) {
       console.error('Error loading data:', err);
@@ -67,9 +74,9 @@ export default function SuperCategories() {
       render: (value) => (
         <div className="flex items-center">
           {value ? (
-            <img 
-              src={value} 
-              alt="Super category" 
+            <img
+              src={value}
+              alt="Super category"
               className="w-8 h-8 object-cover rounded border"
             />
           ) : (
@@ -121,7 +128,7 @@ export default function SuperCategories() {
         Swal.fire('Error!', 'Please select an image file.', 'error');
         return;
       }
-      
+
       // Validate file size (5MB)
       if (file.size > 5 * 1024 * 1024) {
         Swal.fire('Error!', 'Image size should be less than 5MB.', 'error');
@@ -129,7 +136,7 @@ export default function SuperCategories() {
       }
 
       setSelectedImage(file);
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -205,38 +212,40 @@ export default function SuperCategories() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       let response;
-      
+
       // Create FormData for multipart/form-data
       const formDataToSend = new FormData();
       formDataToSend.append('language_id', formData.language_id);
       formDataToSend.append('name', formData.name);
+      formDataToSend.append('country', formData.country);
       formDataToSend.append('description', formData.description);
       formDataToSend.append('status', formData.status);
-      
+
       console.log('Form data being sent:', {
         language_id: formData.language_id,
         name: formData.name,
+        country: formData.country,
         description: formData.description,
         status: formData.status,
         hasImage: !!selectedImage
       });
-      
+
       if (selectedImage) {
         console.log('Adding image to FormData:', selectedImage.name, selectedImage.size);
         formDataToSend.append('image', selectedImage);
       } else {
         console.log('No image selected');
       }
-      
+
       if (editingItem) {
         // Update existing item
         response = await updateSuperCategoryWithImage(editingItem._id, formDataToSend);
         if (response.success) {
-          setSuperCategories(superCategories.map(cat => 
-            cat._id === editingItem._id 
+          setSuperCategories(superCategories.map(cat =>
+            cat._id === editingItem._id
               ? { ...cat, ...formData, image: response.data.image || cat.image }
               : cat
           ));
@@ -251,7 +260,7 @@ export default function SuperCategories() {
           Swal.fire('Created!', 'Super Category has been created.', 'success');
         }
       }
-      
+
       if (response.success) {
         setShowModal(false);
         clearImage();
@@ -290,7 +299,7 @@ export default function SuperCategories() {
               </svg>
             </div>
             <p className="text-gray-600 mb-4">{error}</p>
-            <button 
+            <button
               onClick={loadData}
               className="btn-primary"
             >
@@ -331,7 +340,7 @@ export default function SuperCategories() {
                   <h3 className="text-lg font-medium text-gray-900 mb-4">
                     {editingItem ? 'Edit Super Category' : 'Add New Super Category'}
                   </h3>
-                  
+
                   <div className="space-y-4">
                     {/* Image Upload */}
                     <div>
@@ -376,14 +385,14 @@ export default function SuperCategories() {
                         )}
                       </div>
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Language
                       </label>
                       <select
                         value={formData.language_id}
-                        onChange={(e) => setFormData({...formData, language_id: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, language_id: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       >
@@ -395,7 +404,26 @@ export default function SuperCategories() {
                         ))}
                       </select>
                     </div>
-                    
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Country
+                      </label>
+                      <select
+                        value={formData.country}
+                        onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                        className="input-field text-gray-700"
+                        required
+                      >
+                        <option value="">Select Country</option>
+                        {countryList.map((lang) => (
+                          <option key={lang._id} value={lang._id}>
+                            {lang.country_name} ({lang.country_code})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Super Category Name
@@ -403,32 +431,32 @@ export default function SuperCategories() {
                       <input
                         type="text"
                         value={formData.name}
-                        onChange={(e) => setFormData({...formData, name: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Description
                       </label>
                       <textarea
                         value={formData.description}
-                        onChange={(e) => setFormData({...formData, description: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         className="input-field text-gray-700"
                         rows="3"
                         required
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Status
                       </label>
                       <select
                         value={formData.status}
-                        onChange={(e) => setFormData({...formData, status: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                         className="input-field text-gray-700"
                       >
                         <option value="active">Active</option>
@@ -437,7 +465,7 @@ export default function SuperCategories() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                   <button
                     type="submit"

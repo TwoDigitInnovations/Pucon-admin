@@ -1,9 +1,9 @@
 import axios from "axios";
-     // const ConstantsUrl = "http://localhost:5000/api/";
-      const ConstantsUrl = "https://api.travelertips.cl/api/";
+// const ConstantsUrl = "http://localhost:5000/api/";
+const ConstantsUrl = "https://api.travelertips.cl/api/";
 
 // export const ConstantsUrl = "";
- 
+
 
 
 
@@ -13,26 +13,26 @@ axios.interceptors.response.use(
     if (error.response && error.response.status === 401 && typeof window !== "undefined") {
       if (!isRedirecting) {
         isRedirecting = true;
-        
-       
+
+
         localStorage.removeItem("userDetail");
         localStorage.removeItem("token");
-        
-        
+
+
         window.dispatchEvent(new Event('storage'));
         document.dispatchEvent(new Event('auth-state-changed'));
-        
+
         if (window.router && !window.router.pathname.includes("signIn")) {
           window.router.push("/auth/signIn");
         } else {
           window.location.href = "/auth/signIn";
         }
-        
+
         setTimeout(() => {
           isRedirecting = false;
         }, 2000);
       }
-      
+
       return Promise.resolve({
         data: { success: false, redirect: true }
       });
@@ -45,34 +45,34 @@ axios.interceptors.response.use(
 
 
 function notifyAuthChange() {
- 
+
   window.dispatchEvent(new Event('storage'));
   document.dispatchEvent(new Event('auth-state-changed'));
 }
 
 const handleTokenExpiration = (router) => {
   if (isRedirecting) return true;
-  
+
   console.log("Token expired, logging out user...");
   isRedirecting = true;
-  
+
   try {
     // Clear user data
     localStorage.removeItem("userDetail");
     localStorage.removeItem("token");
-    
+
     // Notify all components about auth change
     notifyAuthChange();
-    
+
     // Navigate to login page if not already there
     if (router && !router.pathname.includes("signIn")) {
       router.push("/auth/signIn");
     }
-    
+
     setTimeout(() => {
       isRedirecting = false;
     }, 2000);
-    
+
     return true;
   } catch (error) {
     console.error("Error during logout:", error);
@@ -92,28 +92,28 @@ let isRedirecting = false;
 
 // const handleTokenExpiration = (router) => {
 //   if (isRedirecting) return true;
-  
+
 //   console.log("Token expired, logging out user...");
 //   isRedirecting = true;
-  
+
 //   try {
-  
+
 //     localStorage.removeItem("userDetail");
 //     localStorage.removeItem("token");
-   
+
 //     window.dispatchEvent(new Event('storage'));
 //     window.dispatchEvent(new Event('auth-state-changed'));
-    
-   
+
+
 //     if (router && !router.pathname.includes("signIn")) {
 //       router.push("/auth/signIn");
 //     }
-    
-   
+
+
 //     setTimeout(() => {
 //       isRedirecting = false;
 //     }, 2000);
-    
+
 //     return true;
 //   } catch (error) {
 //     console.error("Error during logout:", error);
@@ -124,17 +124,17 @@ let isRedirecting = false;
 
 function Api(method, url, data, router, params) {
   return new Promise(function (resolve, reject) {
-   
+
     if (isRedirecting) {
       resolve({ success: false, redirect: true });
       return;
     }
-    
+
     let token = "";
     if (typeof window !== "undefined") {
       token = localStorage?.getItem("token") || "";
     }
-    
+
     axios({
       method,
       url: ConstantsUrl + url,
@@ -165,12 +165,12 @@ function Api(method, url, data, router, params) {
 
 function ApiFormData(method, url, data, router) {
   return new Promise(function (resolve, reject) {
-   
+
     if (isRedirecting) {
       resolve({ redirect: true, message: "Logging you out. Please wait..." });
       return;
     }
-    
+
     let token = "";
     if (typeof window !== "undefined") {
       token = localStorage?.getItem("token") || "";
@@ -188,7 +188,7 @@ function ApiFormData(method, url, data, router) {
         name: value instanceof File ? value.name : null
       })) : null
     });
-    
+
     // Add progress tracking for uploads
     const config = {
       method,
@@ -206,7 +206,7 @@ function ApiFormData(method, url, data, router) {
         }
       }
     };
-    
+
     axios(config).then(
       (res) => {
         console.log('ApiFormData success:', res.data);
@@ -225,7 +225,7 @@ function ApiFormData(method, url, data, router) {
             timeout: err.config?.timeout
           }
         });
-        
+
         if (err.response) {
           if (err?.response?.status === 401) {
             if (typeof window !== "undefined") {
