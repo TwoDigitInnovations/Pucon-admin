@@ -1,6 +1,7 @@
 import axios from "axios";
 // const ConstantsUrl = "http://localhost:5000/api/";
-const ConstantsUrl = "https://api.travelertips.cl/api/";
+// const ConstantsUrl = "https://api.travelertips.cl/api/";
+const ConstantsUrl = "https://pucon-backend.onrender.com/api/";
 
 // export const ConstantsUrl = "";
 
