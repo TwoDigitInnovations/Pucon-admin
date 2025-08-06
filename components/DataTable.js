@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-const DataTable = ({ 
-  data, 
-  columns, 
-  title, 
-  onAdd, 
-  onEdit, 
+const DataTable = ({
+  data,
+  columns,
+  title,
+  onAdd,
+  onEdit,
   onDelete,
   onView,
   searchPlaceholder = "Search...",
@@ -15,13 +15,14 @@ const DataTable = ({
   pagination = null,
   onPageChange = null,
   currentPage = 1,
-  itemsPerPage = 10
+  itemsPerPage = 10,
+  onSearch,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Use server-side pagination if available, otherwise use client-side
   const isServerSidePagination = pagination && onPageChange;
-  
+
   let filteredData = data;
   let totalPages = 1;
   let totalCount = data.length;
@@ -56,19 +57,23 @@ const DataTable = ({
     }
   };
 
-  const indexOfFirstItem = isServerSidePagination 
-    ? (pagination.currentPage - 1) * pagination.limit 
+  const indexOfFirstItem = isServerSidePagination
+    ? (pagination.currentPage - 1) * pagination.limit
     : (currentPage - 1) * itemsPerPage;
-  const indexOfLastItem = isServerSidePagination 
+  const indexOfLastItem = isServerSidePagination
     ? Math.min(pagination.currentPage * pagination.limit, pagination.totalCount)
     : Math.min(currentPage * itemsPerPage, totalCount);
+
+  useEffect(() => {
+    console.log(title)
+  }, []);
 
   return (
     <div className="card">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0">
         <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
-        
+
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
           {showSearch && (
             <div className="relative">
@@ -76,7 +81,7 @@ const DataTable = ({
                 type="text"
                 placeholder={searchPlaceholder}
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => { setSearchTerm(e.target.value); onSearch && onSearch(e.target.value) }}
                 className="input-field pl-10"
               />
               <svg
@@ -94,7 +99,7 @@ const DataTable = ({
               </svg>
             </div>
           )}
-          
+
           {showAddButton && onAdd && (
             <button
               onClick={onAdd}
@@ -197,7 +202,7 @@ const DataTable = ({
           <div className="text-sm text-gray-700">
             Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, totalCount)} of {totalCount} results
           </div>
-          
+
           <div className="flex space-x-2">
             <button
               onClick={() => handlePageChange((isServerSidePagination ? pagination.currentPage : currentPage) - 1)}
@@ -206,21 +211,20 @@ const DataTable = ({
             >
               Previous
             </button>
-            
+
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <button
                 key={page}
                 onClick={() => handlePageChange(page)}
-                className={`px-3 py-2 text-sm font-medium rounded-md ${
-                  (isServerSidePagination ? pagination.currentPage : currentPage) === page
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
-                }`}
+                className={`px-3 py-2 text-sm font-medium rounded-md ${(isServerSidePagination ? pagination.currentPage : currentPage) === page
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
+                  }`}
               >
                 {page}
               </button>
             ))}
-            
+
             <button
               onClick={() => handlePageChange((isServerSidePagination ? pagination.currentPage : currentPage) + 1)}
               disabled={(isServerSidePagination ? pagination.currentPage : currentPage) === totalPages}

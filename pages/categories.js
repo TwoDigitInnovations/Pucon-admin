@@ -4,8 +4,9 @@ import Layout from '../components/Layout';
 import DataTable from '../components/DataTable';
 import Swal from 'sweetalert2';
 import { fetchCategories, createCategoryWithImage, updateCategoryWithImage, deleteCategory, fetchSuperCategories, fetchLanguages } from '../context/apiHelpers';
+import isAuth from '@/components/isAuth';
 
-export default function Categories() {
+function Categories() {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -98,31 +99,31 @@ export default function Categories() {
   };
 
   const columns = [
-    {
-      key: 'image',
-      label: 'Image',
-      render: (value) => (
-        <div className="flex items-center">
-          {value ? (
-            <img
-              src={value}
-              alt="Category"
-              className="w-12 h-12 object-cover rounded-lg border border-gray-200"
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'block';
-              }}
-            />
-          ) : (
-            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </div>
-          )}
-        </div>
-      )
-    },
+    // {
+    //   key: 'image',
+    //   label: 'Image',
+    //   render: (value) => (
+    //     <div className="flex items-center">
+    //       {value ? (
+    //         <img
+    //           src={value}
+    //           alt="Category"
+    //           className="w-12 h-12 object-cover rounded-lg border border-gray-200"
+    //           onError={(e) => {
+    //             e.target.style.display = 'none';
+    //             e.target.nextSibling.style.display = 'block';
+    //           }}
+    //         />
+    //       ) : (
+    //         <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+    //           <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    //             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    //           </svg>
+    //         </div>
+    //       )}
+    //     </div>
+    //   )
+    // },
     {
       key: 'language_id',
       label: 'Language',
@@ -137,17 +138,17 @@ export default function Categories() {
       }
     },
     {
-      key: 'super_category_id',
-      label: 'Super Category',
-      render: (value) => (
-        <div className="font-medium text-gray-900">{value?.name || 'N/A'}</div>
-      )
-    },
-    {
       key: 'name',
       label: 'Category Name',
       render: (value) => (
         <div className="font-medium text-gray-900">{value || ''}</div>
+      )
+    },
+    {
+      key: 'super_category_id',
+      label: 'Super Category',
+      render: (value) => (
+        <div className="font-medium text-gray-900">{value?.name || 'N/A'}</div>
       )
     },
     {
@@ -197,6 +198,19 @@ export default function Categories() {
     await loadData(page);
   };
 
+  const onSearch = async (e) => {
+    const [categoriesResponse] = await Promise.all([
+      fetchCategories(1, 10, e),
+    ]);
+
+    if (categoriesResponse.success) {
+      setCategories(categoriesResponse.data || []);
+      setPagination(categoriesResponse.pagination || null);
+    } else {
+      setError(categoriesResponse.message || 'Failed to load categories');
+    }
+  }
+
   const handleDelete = async (item) => {
     const result = await Swal.fire({
       title: 'Are you sure?',
@@ -244,15 +258,15 @@ export default function Categories() {
         super_category_id: formData.super_category_id,
         name: formData.name,
         status: formData.status,
-        hasImage: !!selectedImage
+        // hasImage: !!selectedImage
       });
 
-      if (selectedImage) {
-        console.log('Adding image to FormData:', selectedImage.name, selectedImage.size);
-        formDataToSend.append('image', selectedImage);
-      } else {
-        console.log('No image selected');
-      }
+      // if (selectedImage) {
+      //   console.log('Adding image to FormData:', selectedImage.name, selectedImage.size);
+      //   formDataToSend.append('image', selectedImage);
+      // } else {
+      //   console.log('No image selected');
+      // }
 
       if (editingItem) {
         // Update existing item
@@ -338,6 +352,7 @@ export default function Categories() {
         pagination={pagination}
         onPageChange={handlePageChange}
         currentPage={currentPage}
+        onSearch={onSearch}
       />
 
       {/* Modal */}
@@ -348,7 +363,8 @@ export default function Categories() {
               <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
             </div>
 
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle md:w-[512px] w-full">
+              {/* sm:max-w-lg sm:w-full */}
               <form onSubmit={handleSubmit}>
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <h3 className="text-lg font-medium text-gray-900 mb-4">
@@ -421,7 +437,7 @@ export default function Categories() {
                       </select>
                     </div>
 
-                    <div>
+                    {/* <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Image
                       </label>
@@ -445,7 +461,7 @@ export default function Categories() {
                           </div>
                         )}
                       </div>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
 
@@ -471,4 +487,6 @@ export default function Categories() {
       )}
     </Layout>
   );
-} 
+}
+
+export default isAuth(Categories);

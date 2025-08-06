@@ -4,8 +4,9 @@ import Layout from '../components/Layout';
 import DataTable from '../components/DataTable';
 import Swal from 'sweetalert2';
 import { fetchCountries, createCountryWithImage, updateCountryWithImage, deleteCountry, fetchLanguages } from '../context/apiHelpers';
+import isAuth from '@/components/isAuth';
 
-export default function Countries() {
+function Countries() {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -20,7 +21,7 @@ export default function Countries() {
   const [formData, setFormData] = useState({
     language_id: '',
     country_name: '',
-    country_code: '',
+    // country_code: '',
     status: 'active'
   });
 
@@ -65,7 +66,7 @@ export default function Countries() {
   const columns = [
     {
       key: 'image',
-      label: 'Flag',
+      label: 'Logo',
       render: (value) => (
         <div className="flex items-center">
           {value ? (
@@ -103,7 +104,7 @@ export default function Countries() {
     },
     {
       key: 'country_name',
-      label: 'Country Name',
+      label: 'Cities Name',
       render: (value) => (
         <div className="font-medium text-gray-900">{value || ''}</div>
       )
@@ -121,15 +122,15 @@ export default function Countries() {
         );
       }
     },
-    {
-      key: 'country_code',
-      label: 'Country Code',
-      render: (value) => (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-          {value}
-        </span>
-      )
-    },
+    // {
+    //   key: 'country_code',
+    //   label: 'Country Code',
+    //   render: (value) => (
+    //     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+    //       {value}
+    //     </span>
+    //   )
+    // },
     {
       key: 'status',
       label: 'Status',
@@ -203,7 +204,7 @@ export default function Countries() {
     setFormData({
       language_id: '',
       country_name: '',
-      country_code: '',
+      // country_code: '',
       status: 'active'
     });
     clearAllImages();
@@ -218,7 +219,7 @@ export default function Countries() {
     setFormData({
       language_id: item.language_id._id,
       country_name: item.country_name,
-      country_code: item.country_code,
+      // country_code: item.country_code,
       status: item.status
     });
     setSelectedImage(null);
@@ -232,6 +233,20 @@ export default function Countries() {
     setCurrentPage(page);
     await loadData(page);
   };
+
+  const onSearch = async (e) => {
+    console.log(e)
+    const [countriesResponse] = await Promise.all([
+      fetchCountries(1, 10, e),
+    ]);
+
+    if (countriesResponse.success) {
+      setCountries(countriesResponse.data || []);
+      setPagination(countriesResponse.pagination || null);
+    } else {
+      setError(countriesResponse.message || 'Failed to load countries');
+    }
+  }
 
   const handleDelete = async (item) => {
     const result = await Swal.fire({
@@ -272,13 +287,13 @@ export default function Countries() {
       const formDataToSend = new FormData();
       formDataToSend.append('language_id', formData.language_id);
       formDataToSend.append('country_name', formData.country_name);
-      formDataToSend.append('country_code', formData.country_code);
+      // formDataToSend.append('country_code', formData.country_code);
       formDataToSend.append('status', formData.status);
 
       console.log('Form data being sent:', {
         language_id: formData.language_id,
         country_name: formData.country_name,
-        country_code: formData.country_code,
+        // country_code: formData.country_code,
         status: formData.status,
         hasFlagImage: !!selectedImage,
         hasMapImage: !!selectedMapImage
@@ -382,14 +397,15 @@ export default function Countries() {
       <DataTable
         data={countries}
         columns={columns}
-        title="Countries"
+        title="Citis"
         onAdd={handleAdd}
         onEdit={handleEdit}
         onDelete={handleDelete}
-        searchPlaceholder="Search countries..."
+        searchPlaceholder="Search citys..."
         pagination={pagination}
         onPageChange={handlePageChange}
         currentPage={currentPage}
+        onSearch={onSearch}
       />
 
       {/* Modal */}
@@ -404,14 +420,14 @@ export default function Countries() {
               <form onSubmit={handleSubmit}>
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <h3 className="text-lg font-medium text-gray-900 mb-4">
-                    {editingItem ? 'Edit Country' : 'Add New Country'}
+                    {editingItem ? 'Edit Cities' : 'Add New Cities'}
                   </h3>
 
                   <div className="space-y-4">
                     {/* Flag Image Upload */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Country Flag
+                        Cities Logo
                       </label>
                       <div className="flex items-center space-x-4">
                         <div className="flex-shrink-0">
@@ -423,7 +439,7 @@ export default function Countries() {
                             />
                           ) : (
                             <div className="w-16 h-12 bg-gray-200 rounded border flex items-center justify-center">
-                              <span className="text-xs text-gray-500">No flag</span>
+                              <span className="text-xs text-gray-500">No logo</span>
                             </div>
                           )}
                         </div>
@@ -455,7 +471,7 @@ export default function Countries() {
                     {/* Map Image Upload */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Country Map
+                        Cities Map
                       </label>
                       <div className="flex items-center space-x-4">
                         <div className="flex-shrink-0">
@@ -518,7 +534,7 @@ export default function Countries() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Country Name
+                        Cities Name
                       </label>
                       <input
                         type="text"
@@ -529,7 +545,7 @@ export default function Countries() {
                       />
                     </div>
 
-                    <div>
+                    {/* <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Country Code
                       </label>
@@ -542,7 +558,7 @@ export default function Countries() {
                         placeholder="e.g., USA, IND, GBR"
                         required
                       />
-                    </div>
+                    </div> */}
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -585,4 +601,6 @@ export default function Countries() {
       )}
     </Layout>
   );
-} 
+}
+
+export default isAuth(Countries);

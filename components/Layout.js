@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
@@ -10,10 +10,27 @@ import {
   FileText,
   Tag,
 } from 'lucide-react';
+import { useAppContext } from '@/context/AppContext';
+import { PiSignOutFill } from "react-icons/pi";
+import Swal from "sweetalert2";
 
 const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
+  const { user, setUser } = useAppContext()
+  console.log(user)
+
+  useEffect(() => {
+    getUserDetail();
+  }, []);
+
+  const getUserDetail = async () => {
+    const user = localStorage.getItem("userDetail");
+    console.log("drfdtftfyfgyhftgytgfygf", user);
+    if (user) {
+      setUser(JSON.parse(user));
+    }
+  };
 
   const navigation = [
     {
@@ -23,7 +40,7 @@ const Layout = ({ children }) => {
       current: router.pathname === '/languages'
     },
     {
-      name: 'Countries',
+      name: 'Cities',
       href: '/countries',
       icon: <Globe className="w-5 h-5 mr-3" />, // Lucide Globe
       current: router.pathname === '/countries'
@@ -89,20 +106,21 @@ const Layout = ({ children }) => {
                   ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700'
                   : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                   }`}
-                onClick={() => setSidebarOpen(false)}
+                onClick={() => { setSidebarOpen(false); console.log(item.href) }}
               >
                 {item.icon}
                 {item.name}
               </Link>
             ))}
+
           </div>
         </nav>
-      </div>
+      </div >
 
       {/* Main content - With proper left margin for fixed sidebar */}
-      <div className="main-content">
+      < div className="main-content" >
         {/* Top bar - Fixed at top */}
-        <div className="sticky top-0 z-30 bg-white shadow-sm border-b border-gray-200">
+        < div className="sticky top-0 z-30 bg-white shadow-sm border-b border-gray-200" >
           <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -113,29 +131,62 @@ const Layout = ({ children }) => {
               </svg>
             </button>
 
-            <div className="flex items-center space-x-4">
+            {/* <div className="flex items-center space-x-4">
               <h2 className="text-lg font-semibold text-gray-900">
                 {navigation.find(item => item.current)?.name || 'Dashboard'}
               </h2>
-            </div>
+            </div> */}
 
-            <div className="flex items-center space-x-4">
+            {user?.token && (
+              <div className="flex items-center space-x-4">
+                <div className="hidden sm:flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">{user?.username?.charAt(0).toUpperCase()}</span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">{user?.username}</span>
+                </div>
+              </div>
+            )}
+
+            {/* {!user?.token && ( */}
+            <div className="flex items-center space-x-4"
+              onClick={() => {
+                Swal.fire({
+                  title: "Are you sure?",
+                  text: "Do you want to signout?",
+                  icon: "warning",
+                  showCancelButton: true,
+                  cancelButtonColor: "#d33",
+                  confirmButtonText: "Yes",
+                  cancelButtonText: "No",
+                }).then(function (result) {
+                  if (result.isConfirmed) {
+                    setUser({});
+                    localStorage.removeItem("userDetail");
+                    localStorage.removeItem("token");
+                    router.push("/login");
+                  }
+                })
+              }}
+            >
               <div className="hidden sm:flex items-center space-x-2">
                 <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">A</span>
+                  <PiSignOutFill className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-sm font-medium text-gray-700">Admin</span>
+                <span className="text-sm font-medium text-gray-700">Sign Out</span>
               </div>
             </div>
+            {/* )} */}
+
           </div>
-        </div>
+        </div >
 
         {/* Page content */}
-        <main className="p-4 sm:p-6 lg:p-8">
+        < main className="p-4 sm:p-6 lg:p-8" >
           {children}
-        </main>
-      </div>
-    </div>
+        </main >
+      </div >
+    </div >
   );
 };
 

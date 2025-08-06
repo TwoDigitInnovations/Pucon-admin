@@ -4,8 +4,9 @@ import Layout from '../components/Layout';
 import DataTable from '../components/DataTable';
 import Swal from 'sweetalert2';
 import { fetchSubCategories, createSubCategoryWithImage, updateSubCategoryWithImage, deleteSubCategory, fetchCategories, fetchLanguages } from '../context/apiHelpers';
+import isAuth from '@/components/isAuth';
 
-export default function SubCategories() {
+function SubCategories() {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -196,6 +197,19 @@ export default function SubCategories() {
     await loadData(page);
   };
 
+  const onSearch = async (e) => {
+    const [subCategoriesResponse] = await Promise.all([
+      fetchSubCategories(1, 10, e),
+    ]);
+
+    if (subCategoriesResponse.success) {
+      setSubCategories(subCategoriesResponse.data || []);
+      setPagination(subCategoriesResponse.pagination || null);
+    } else {
+      setError(subCategoriesResponse.message || 'Failed to load sub categories');
+    }
+  }
+
   const handleDelete = async (item) => {
     const result = await Swal.fire({
       title: 'Are you sure?',
@@ -337,6 +351,7 @@ export default function SubCategories() {
         pagination={pagination}
         onPageChange={handlePageChange}
         currentPage={currentPage}
+        onSearch={onSearch}
       />
 
       {/* Modal */}
@@ -431,20 +446,20 @@ export default function SubCategories() {
                           onChange={handleImageChange}
                           className="input-field text-gray-700"
                         />
-                        {imagePreview && (
-                          <div className="flex items-center space-x-2">
-                            <img src={imagePreview} alt="Preview" className="w-16 h-16 object-cover rounded-md" />
-                            <button
-                              type="button"
-                              onClick={clearImage}
-                              className="btn-secondary btn-sm"
-                            >
-                              Clear Image
-                            </button>
-                          </div>
-                        )}
                       </div>
                     </div>
+                    {imagePreview && (
+                      <div className="flex items-center space-x-2">
+                        <img src={imagePreview} alt="Preview" className="w-16 h-16 object-cover rounded-md" />
+                        <button
+                          type="button"
+                          onClick={clearImage}
+                          className="btn-secondary btn-sm"
+                        >
+                          Clear Image
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -470,4 +485,6 @@ export default function SubCategories() {
       )}
     </Layout>
   );
-} 
+}
+
+export default isAuth(SubCategories);

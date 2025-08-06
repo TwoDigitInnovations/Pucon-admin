@@ -4,8 +4,9 @@ import Layout from '../components/Layout';
 import DataTable from '../components/DataTable';
 import Swal from 'sweetalert2';
 import { fetchLanguages, createLanguageWithImage, updateLanguageWithImage, deleteLanguage } from '../context/apiHelpers';
+import isAuth from '@/components/isAuth';
 
-export default function Languages() {
+function Languages() {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -199,6 +200,17 @@ export default function Languages() {
     }
   };
 
+  const onSearch = async (e) => {
+    console.log(e)
+    const response = await fetchLanguages(1, 10, e);
+    if (response.success) {
+      setLanguages(response.data || []);
+      setPagination(response.pagination || null);
+    } else {
+      setError(response.message || 'Failed to load languages');
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -309,6 +321,7 @@ export default function Languages() {
         pagination={pagination}
         onPageChange={handlePageChange}
         currentPage={currentPage}
+        onSearch={onSearch}
       />
 
       {/* Modal */}
@@ -380,24 +393,24 @@ export default function Languages() {
                           onChange={handleImageChange}
                           className="input-field text-gray-700"
                         />
-                        {imagePreview && (
-                          <div className="flex items-center space-x-2">
-                            <img
-                              src={imagePreview}
-                              alt="Preview"
-                              className="w-16 h-16 object-cover rounded-md border border-gray-200"
-                            />
-                            <button
-                              type="button"
-                              onClick={clearImage}
-                              className="ml-2 btn-secondary btn-sm"
-                            >
-                              Clear Image
-                            </button>
-                          </div>
-                        )}
                       </div>
                     </div>
+                    {imagePreview && (
+                      <div className="flex items-center space-x-2">
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="w-16 h-16 object-cover rounded-md border border-gray-200"
+                        />
+                        <button
+                          type="button"
+                          onClick={clearImage}
+                          className="ml-2 btn-secondary btn-sm"
+                        >
+                          Clear Image
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -423,4 +436,6 @@ export default function Languages() {
       )}
     </Layout>
   );
-} 
+}
+
+export default isAuth(Languages);

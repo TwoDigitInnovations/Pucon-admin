@@ -6,10 +6,10 @@ import DataTable from '../components/DataTable';
 import { Eye } from 'lucide-react';
 import Swal from 'sweetalert2';
 
-import { 
-  fetchContent, 
-  createContent, 
-  updateContent, 
+import {
+  fetchContent,
+  createContent,
+  updateContent,
   deleteContent,
   fetchLanguages,
   fetchCountries,
@@ -17,6 +17,9 @@ import {
   fetchCategories,
   fetchSubCategories
 } from '../context/apiHelpers';
+import isAuth from '@/components/isAuth';
+
+const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
 // TipTap Editor Component
 const TipTapEditor = dynamic(() => import('../components/TipTapEditor'), {
@@ -33,7 +36,7 @@ const TipTapEditor = dynamic(() => import('../components/TipTapEditor'), {
 
 
 
-export default function Content() {
+function Content() {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -59,7 +62,7 @@ export default function Content() {
   });
   const [editorContent, setEditorContent] = useState('');
   const [fullScreenContent, setFullScreenContent] = useState('');
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState(null);
@@ -75,7 +78,7 @@ export default function Content() {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Fetch all required data
       const [
         contentResponse,
@@ -234,7 +237,7 @@ export default function Content() {
     console.log('Super Category ID:', item.super_category_id);
     console.log('Category ID:', item.category_id);
     console.log('Sub Category ID:', item.sub_category_id);
-    
+
     setEditingItem(item);
     setFormData({
       language_id: typeof item.language_id === 'object' ? item.language_id._id : item.language_id,
@@ -296,28 +299,28 @@ export default function Content() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       // Debug: Log current state
       console.log('=== SUBMIT DEBUG ===');
       console.log('Current editorContent:', editorContent);
       console.log('Current formData.content:', formData.content);
       console.log('=== END SUBMIT DEBUG ===');
-      
+
       // Create the final form data with current editor content
       let contentToUse = editorContent;
-      
+
       // If editorContent is empty, try formData.content
       if (!contentToUse) {
         contentToUse = formData.content;
         console.log('Using formData.content as fallback:', contentToUse);
       }
-      
+
       const finalFormData = {
         ...formData,
         content: contentToUse
       };
-      
+
       // Validate that content is not empty
       if (!finalFormData.content || finalFormData.content.trim() === '') {
         console.log('Content validation failed - content is empty');
@@ -328,14 +331,14 @@ export default function Content() {
         );
         return;
       }
-      
+
       console.log('=== FRONTEND CONTENT DEBUG ===');
       console.log('Editor content:', editorContent);
       console.log('Form data being sent:', finalFormData);
       console.log('=== END FRONTEND DEBUG ===');
-      
+
       let response;
-      
+
       if (editingItem) {
         // Update existing item
         response = await updateContent(editingItem._id, finalFormData);
@@ -345,17 +348,17 @@ export default function Content() {
         response = await createContent(finalFormData);
         console.log('Create response:', response);
       }
-      
+
       if (response.success) {
         setShowModal(false);
         // Reset editor content after successful save
         setEditorContent('');
-        
+
         // Update the content array with the new/updated data
         if (editingItem) {
           // Update existing item
-          setContent(content.map(cont => 
-            cont._id === editingItem._id 
+          setContent(content.map(cont =>
+            cont._id === editingItem._id
               ? response.data  // Use the populated data from response
               : cont
           ));
@@ -363,7 +366,7 @@ export default function Content() {
           // Add new item at the beginning
           setContent([response.data, ...content]);
         }
-        
+
         Swal.fire(
           'Success!',
           editingItem ? 'Content updated successfully!' : 'Content created successfully!',
@@ -411,7 +414,7 @@ export default function Content() {
               </svg>
             </div>
             <p className="text-gray-600 mb-4">{error}</p>
-            <button 
+            <button
               onClick={loadData}
               className="btn-primary"
             >
@@ -437,6 +440,7 @@ export default function Content() {
         pagination={pagination}
         onPageChange={handlePageChange}
         currentPage={currentPage}
+        showSearch={false}
       />
 
       {/* Add/Edit Modal */}
@@ -447,13 +451,15 @@ export default function Content() {
               <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
             </div>
 
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all md:my-8 md:mx-8 sm:align-middle md:w-[95%] w-full">
+              {/* sm:my-8 */}
+              {/* sm:max-w-4xl sm:w-full */}
               <form onSubmit={handleSubmit}>
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <h3 className="text-lg font-medium text-gray-900 mb-4">
                     {editingItem ? 'Edit Content' : 'Add New Content'}
                   </h3>
-                  
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -461,7 +467,7 @@ export default function Content() {
                       </label>
                       <select
                         value={formData.language_id}
-                        onChange={(e) => setFormData({...formData, language_id: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, language_id: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       >
@@ -473,14 +479,14 @@ export default function Content() {
                         ))}
                       </select>
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Country
                       </label>
                       <select
                         value={formData.country_id}
-                        onChange={(e) => setFormData({...formData, country_id: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, country_id: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       >
@@ -492,14 +498,14 @@ export default function Content() {
                         ))}
                       </select>
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Super Category
                       </label>
                       <select
                         value={formData.super_category_id}
-                        onChange={(e) => setFormData({...formData, super_category_id: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, super_category_id: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       >
@@ -511,14 +517,14 @@ export default function Content() {
                         ))}
                       </select>
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Category
                       </label>
                       <select
                         value={formData.category_id}
-                        onChange={(e) => setFormData({...formData, category_id: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       >
@@ -530,14 +536,14 @@ export default function Content() {
                         ))}
                       </select>
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Sub Category
                       </label>
                       <select
                         value={formData.sub_category_id}
-                        onChange={(e) => setFormData({...formData, sub_category_id: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, sub_category_id: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       >
@@ -549,14 +555,14 @@ export default function Content() {
                         ))}
                       </select>
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Status
                       </label>
                       <select
                         value={formData.status}
-                        onChange={(e) => setFormData({...formData, status: e.target.value})}
+                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                         className="input-field text-gray-700"
                       >
                         <option value="active">Active</option>
@@ -564,8 +570,8 @@ export default function Content() {
                       </select>
                     </div>
                   </div>
-                  
-                  <div className="mt-4">
+
+                  {/* <div className="mt-4">
                     <div className="flex items-center justify-between mb-1">
                       <label className="block text-sm font-medium text-gray-700">
                         Content (HTML)
@@ -594,9 +600,28 @@ export default function Content() {
                         />
                       </div>
                     </div>
+                  </div> */}
+
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Content (HTML)
+                    </label>
+                    <section className='relative'>
+                      <div className='w-[99%] mx-auto md:w-full bg-white h-full border border-gray-300 rounded-lg p-3 md:p-3 flex flex-col overflow-auto space-y-4'>
+
+                        <div className='w-full  text-sm md:text-md rounded-2xl  space-y-4 border-t-[10px] border-gray-300 text-black'>
+                          <JoditEditor
+                            className="editor max-h-screen overflow-auto"
+                            rows={8}
+                            value={editorContent}
+                            onChange={setEditorContent}
+                          />
+                        </div>
+                      </div>
+                    </section>
                   </div>
                 </div>
-                
+
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                   <button
                     type="submit"
@@ -660,7 +685,7 @@ export default function Content() {
                 </button>
               </div>
             </div>
-            
+
             {/* Editor Container */}
             <div className="flex-1 bg-white overflow-hidden">
               <div className="h-full p-4" style={{ height: 'calc(100vh - 120px)' }}>
@@ -691,7 +716,7 @@ export default function Content() {
                 <h3 className="text-lg font-medium text-gray-900 mb-4">
                   Content Details
                 </h3>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Language</label>
@@ -699,35 +724,35 @@ export default function Content() {
                       {selectedContent.language_id?.language_name} ({selectedContent.language_id?.language_code})
                     </p>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
                     <p className="text-sm text-gray-900">
                       {selectedContent.country_id?.country_name || 'N/A'}
                     </p>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Super Category</label>
                     <p className="text-sm text-gray-900">
                       {selectedContent.super_category_id?.name || 'N/A'}
                     </p>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                     <p className="text-sm text-gray-900">
                       {selectedContent.category_id?.name || 'N/A'}
                     </p>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Sub Category</label>
                     <p className="text-sm text-gray-900">
                       {selectedContent.sub_category_id?.name || 'N/A'}
                     </p>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                     <p className="text-sm text-gray-900">
@@ -736,7 +761,7 @@ export default function Content() {
                       </span>
                     </p>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Created At</label>
                     <p className="text-sm text-gray-900">
@@ -744,7 +769,7 @@ export default function Content() {
                     </p>
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
                   <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 max-h-64 overflow-y-auto">
@@ -755,7 +780,7 @@ export default function Content() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                 <button
                   type="button"
@@ -771,4 +796,6 @@ export default function Content() {
       )}
     </Layout>
   );
-} 
+}
+
+export default isAuth(Content);

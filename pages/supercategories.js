@@ -4,8 +4,9 @@ import Layout from '../components/Layout';
 import DataTable from '../components/DataTable';
 import Swal from 'sweetalert2';
 import { fetchSuperCategories, createSuperCategoryWithImage, updateSuperCategoryWithImage, deleteSuperCategory, fetchLanguages, fetchCountries } from '../context/apiHelpers';
+import isAuth from '@/components/isAuth';
 
-export default function SuperCategories() {
+function SuperCategories() {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -20,7 +21,7 @@ export default function SuperCategories() {
     language_id: '',
     country: '',
     name: '',
-    description: '',
+    // description: '',
     status: 'active'
   });
 
@@ -96,15 +97,15 @@ export default function SuperCategories() {
         <div className="font-medium text-gray-900">{value || ''}</div>
       )
     },
-    {
-      key: 'description',
-      label: 'Description',
-      render: (value) => (
-        <div className="max-w-xs">
-          <div className="text-sm text-gray-900 truncate">{value || ''}</div>
-        </div>
-      )
-    },
+    // {
+    //   key: 'description',
+    //   label: 'Description',
+    //   render: (value) => (
+    //     <div className="max-w-xs">
+    //       <div className="text-sm text-gray-900 truncate">{value || ''}</div>
+    //     </div>
+    //   )
+    // },
     {
       key: 'status',
       label: 'Status',
@@ -157,7 +158,7 @@ export default function SuperCategories() {
     setFormData({
       language_id: '',
       name: '',
-      description: '',
+      // description: '',
       status: 'active'
     });
     clearImage();
@@ -172,7 +173,7 @@ export default function SuperCategories() {
       language_id: item.language_id._id,
       country: item.country,
       name: item.name,
-      description: item.description,
+      // description: item.description,
       status: item.status
     });
     setSelectedImage(null);
@@ -184,6 +185,19 @@ export default function SuperCategories() {
     setCurrentPage(page);
     await loadData(page);
   };
+
+  const onSearch = async (e) => {
+    const [superCategoriesResponse] = await Promise.all([
+      fetchSuperCategories(1, 10, e),
+    ]);
+
+    if (superCategoriesResponse.success) {
+      setSuperCategories(superCategoriesResponse.data || []);
+      setPagination(superCategoriesResponse.pagination || null);
+    } else {
+      setError(superCategoriesResponse.message || 'Failed to load super categories');
+    }
+  }
 
   const handleDelete = async (item) => {
     const result = await Swal.fire({
@@ -225,14 +239,14 @@ export default function SuperCategories() {
       formDataToSend.append('language_id', formData.language_id);
       formDataToSend.append('name', formData.name);
       formDataToSend.append('country', formData.country);
-      formDataToSend.append('description', formData.description);
+      // formDataToSend.append('description', formData.description);
       formDataToSend.append('status', formData.status);
 
       console.log('Form data being sent:', {
         language_id: formData.language_id,
         name: formData.name,
         country: formData.country,
-        description: formData.description,
+        // description: formData.description,
         status: formData.status,
         hasImage: !!selectedImage
       });
@@ -328,6 +342,7 @@ export default function SuperCategories() {
         pagination={pagination}
         onPageChange={handlePageChange}
         currentPage={currentPage}
+        onSearch={onSearch}
       />
 
       {/* Modal */}
@@ -441,7 +456,7 @@ export default function SuperCategories() {
                       />
                     </div>
 
-                    <div>
+                    {/* <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Description
                       </label>
@@ -452,7 +467,7 @@ export default function SuperCategories() {
                         rows="3"
                         required
                       />
-                    </div>
+                    </div> */}
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -495,4 +510,6 @@ export default function SuperCategories() {
       )}
     </Layout>
   );
-} 
+}
+
+export default isAuth(SuperCategories);

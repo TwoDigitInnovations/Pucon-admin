@@ -7,7 +7,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     // Redirect to categories page by default
-    router.push('/categories');
+    router.push('/login');
   }, [router]);
 
   return (
