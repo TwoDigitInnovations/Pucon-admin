@@ -75,7 +75,7 @@ function Login() {
                         </div>
                         <input
                             placeholder="Username"
-                            className="bg-white outline-none pl-2 text-black text-xs md:text-base border-l-2 border-blue-700 md:h-10 h-5"
+                            className="bg-white outline-none px-2 text-black text-xs md:text-base border-l-2 border-blue-700 md:h-10 h-5 w-full"
                             value={userDetail.username}
                             autoComplete="false"
                             onChange={(text) => {
@@ -94,7 +94,7 @@ function Login() {
                         <input
                             placeholder="Password"
                             type="password"
-                            className="bg-white outline-none pl-2 text-black text-xs md:text-base border-l-2 border-blue-700 md:h-10 h-5"
+                            className="bg-white outline-none px-2 text-black text-xs md:text-base border-l-2 border-blue-700 md:h-10 h-5 w-full"
                             value={userDetail.password}
                             autoComplete="new-password"
                             onChange={(text) => {

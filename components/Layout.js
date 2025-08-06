@@ -113,6 +113,29 @@ const Layout = ({ children }) => {
               </Link>
             ))}
 
+            <div className='group flex md:hidden items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900' onClick={() => {
+              Swal.fire({
+                title: "Are you sure?",
+                text: "Do you want to sign out?",
+                icon: "warning",
+                showCancelButton: true,
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes",
+                confirmButtonColor: "rgb(37 99 235)",
+                cancelButtonText: "No",
+              }).then(function (result) {
+                if (result.isConfirmed) {
+                  setSidebarOpen(false);
+                  setUser({});
+                  localStorage.removeItem("userDetail");
+                  localStorage.removeItem("token");
+                  router.push("/login");
+                }
+              })
+            }}>
+              <PiSignOutFill className="w-5 h-5 mr-3 text-gray-700" />
+              <p className="text-sm font-medium text-gray-700">Sign Out</p>
+            </div>
           </div>
         </nav>
       </div >
@@ -153,11 +176,12 @@ const Layout = ({ children }) => {
               onClick={() => {
                 Swal.fire({
                   title: "Are you sure?",
-                  text: "Do you want to signout?",
+                  text: "Do you want to sign out?",
                   icon: "warning",
                   showCancelButton: true,
                   cancelButtonColor: "#d33",
                   confirmButtonText: "Yes",
+                  confirmButtonColor: "rgb(37 99 235)",
                   cancelButtonText: "No",
                 }).then(function (result) {
                   if (result.isConfirmed) {

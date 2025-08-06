@@ -397,11 +397,11 @@ function Countries() {
       <DataTable
         data={countries}
         columns={columns}
-        title="Citis"
+        title="Cities"
         onAdd={handleAdd}
         onEdit={handleEdit}
         onDelete={handleDelete}
-        searchPlaceholder="Search citys..."
+        searchPlaceholder="Search cities..."
         pagination={pagination}
         onPageChange={handlePageChange}
         currentPage={currentPage}
