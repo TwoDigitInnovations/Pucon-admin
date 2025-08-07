@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
 import DataTable from '../components/DataTable';
 import Swal from 'sweetalert2';
-import { fetchCategories, createCategoryWithImage, updateCategoryWithImage, deleteCategory, fetchSuperCategories, fetchLanguages } from '../context/apiHelpers';
+import { fetchCategories, createCategoryWithImage, updateCategoryWithImage, deleteCategory, fetchSuperCategories, fetchLanguages, fetchCountries } from '../context/apiHelpers';
 import isAuth from '@/components/isAuth';
 
 function Categories() {
@@ -19,6 +19,7 @@ function Categories() {
   const [imagePreview, setImagePreview] = useState(null);
   const [formData, setFormData] = useState({
     language_id: '',
+    country: '',
     super_category_id: '',
     name: '',
     status: 'active'
@@ -27,6 +28,7 @@ function Categories() {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState(null);
+  const [countryList, setCountryList] = useState([]);
 
   // Fetch categories and super categories on component mount
   useEffect(() => {
@@ -39,10 +41,11 @@ function Categories() {
       setError(null);
 
       // Fetch categories, super categories, and languages
-      const [categoriesResponse, superCategoriesResponse, languagesResponse] = await Promise.all([
+      const [categoriesResponse, superCategoriesResponse, languagesResponse, countryResponse] = await Promise.all([
         fetchCategories(page, 10),
         fetchSuperCategories(),
-        fetchLanguages()
+        fetchLanguages(),
+        fetchCountries()
       ]);
 
       if (categoriesResponse.success) {
@@ -59,6 +62,12 @@ function Categories() {
       if (languagesResponse.success) {
         setLanguages(languagesResponse.data || []);
       }
+
+      if (countryResponse.success) {
+        setCountryList(countryResponse.data || []);
+        console.log(countryResponse.data)
+      }
+
     } catch (err) {
       console.error('Error loading data:', err);
       setError(err.message || 'Failed to load data');
@@ -125,6 +134,16 @@ function Categories() {
     //   )
     // },
     {
+      // key: 'id',
+      label: "Index",
+      render: (value, item, index) => {
+        console.log(index)
+        return (
+          <div className="font-medium text-gray-900">{index + 1}</div>
+        )
+      }
+    },
+    {
       key: 'language_id',
       label: 'Language',
       render: (value) => {
@@ -133,6 +152,19 @@ function Categories() {
           <div>
             <div className="font-medium text-gray-900">{value.language_name}</div>
             <div className="text-sm text-gray-500">Code: {value.language_code}</div>
+          </div>
+        );
+      }
+    },
+    {
+      key: 'country',
+      label: 'Country',
+      render: (value) => {
+        console.log(value)
+        if (!value) return <div>No Country</div>;
+        return (
+          <div>
+            <div className="font-medium text-gray-900">{value?.country_name}</div>
           </div>
         );
       }
@@ -171,6 +203,7 @@ function Categories() {
     setEditingItem(null);
     setFormData({
       language_id: '',
+      country: '',
       super_category_id: '',
       name: '',
       status: 'active'
@@ -184,6 +217,7 @@ function Categories() {
     setEditingItem(item);
     setFormData({
       language_id: item.language_id._id || '',
+      country: item.country._id,
       super_category_id: item.super_category_id._id || item.super_category_id,
       name: item.name,
       status: item.status
@@ -249,12 +283,14 @@ function Categories() {
       // Create FormData for multipart/form-data
       const formDataToSend = new FormData();
       formDataToSend.append('language_id', formData.language_id);
+      formDataToSend.append('country', formData.country);
       formDataToSend.append('super_category_id', formData.super_category_id);
       formDataToSend.append('name', formData.name);
       formDataToSend.append('status', formData.status);
 
       console.log('Form data being sent:', {
         language_id: formData.language_id,
+        country: formData.country,
         super_category_id: formData.super_category_id,
         name: formData.name,
         status: formData.status,
@@ -378,7 +414,7 @@ function Categories() {
                       </label>
                       <select
                         value={formData.language_id}
-                        onChange={(e) => setFormData({ ...formData, language_id: e.target.value })}
+                        onChange={(e) => setFormData({ ...formData, language_id: e.target.value, country: '', super_category_id: '' })}
                         className="input-field text-gray-700"
                         required
                       >
@@ -393,16 +429,35 @@ function Categories() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Country
+                      </label>
+                      <select disabled={!formData.language_id}
+                        value={formData.country}
+                        onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                        className="input-field text-gray-700"
+                        required
+                      >
+                        <option value="">{countryList.filter(f => f.language_id._id === formData.language_id).length > 0 ? 'Select Country' : 'No Country Available'}</option>
+                        {countryList.filter(f => f.language_id._id === formData.language_id).map((lang) => (
+                          <option key={lang._id} value={lang._id}>
+                            {lang.country_name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
                         Super Category
                       </label>
-                      <select
+                      <select disabled={!formData.language_id || !formData.country}
                         value={formData.super_category_id}
                         onChange={(e) => setFormData({ ...formData, super_category_id: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       >
-                        <option value="">Select Super Category</option>
-                        {superCategories.map((superCat) => (
+                        <option value="">{superCategories.filter(f => f.country._id === formData.country).length > 0 ? 'Select Super Category' : 'No Super Category Available'}</option>
+                        {superCategories.filter(f => f.country._id === formData.country).map((superCat) => (
                           <option key={superCat._id} value={superCat._id}>
                             {superCat.name}
                           </option>

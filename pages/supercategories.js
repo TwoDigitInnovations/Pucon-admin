@@ -71,6 +71,16 @@ function SuperCategories() {
 
   const columns = [
     {
+      // key: 'id',
+      label: "Index",
+      render: (value, item, index) => {
+        console.log(index)
+        return (
+          <div className="font-medium text-gray-900">{index + 1}</div>
+        )
+      }
+    },
+    {
       key: 'image',
       label: 'Image',
       render: (value) => (
@@ -89,7 +99,32 @@ function SuperCategories() {
         </div>
       )
     },
-
+    {
+      key: 'language_id',
+      label: 'Language',
+      render: (value) => {
+        if (!value) return <div>No Language</div>;
+        return (
+          <div>
+            <div className="font-medium text-gray-900">{value.language_name}</div>
+            <div className="text-sm text-gray-500">Code: {value.language_code}</div>
+          </div>
+        );
+      }
+    },
+    {
+      key: 'country',
+      label: 'Country',
+      render: (value) => {
+        console.log(value)
+        if (!value) return <div>No Country</div>;
+        return (
+          <div>
+            <div className="font-medium text-gray-900">{value?.country_name}</div>
+          </div>
+        );
+      }
+    },
     {
       key: 'name',
       label: 'Super Category Name',
@@ -108,7 +143,7 @@ function SuperCategories() {
     // },
     {
       key: 'status',
-      label: 'Status',
+      label: 'Super Category Status',
       render: (value) => (
         <span className={`status-${value}`}>
           {value === 'active' ? 'Active' : 'Inactive'}
@@ -158,6 +193,7 @@ function SuperCategories() {
     setFormData({
       language_id: '',
       name: '',
+      country: '',
       // description: '',
       status: 'active'
     });
@@ -411,7 +447,9 @@ function SuperCategories() {
                       </label>
                       <select
                         value={formData.language_id}
-                        onChange={(e) => setFormData({ ...formData, language_id: e.target.value })}
+                        onChange={(e) => {
+                          setFormData({ ...formData, language_id: e.target.value, country: '' })
+                        }}
                         className="input-field text-gray-700"
                         required
                       >
@@ -428,16 +466,16 @@ function SuperCategories() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Country
                       </label>
-                      <select
+                      <select disabled={!formData.language_id}
                         value={formData.country}
                         onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       >
-                        <option value="">Select Country</option>
-                        {countryList.map((lang) => (
+                        <option value="">{countryList.filter(f => f.language_id._id === formData.language_id).length > 0 ? 'Select Country' : 'No Country Available'}</option>
+                        {countryList.filter(f => f.language_id._id === formData.language_id).map((lang) => (
                           <option key={lang._id} value={lang._id}>
-                            {lang.country_name} ({lang.country_code})
+                            {lang.country_name}
                           </option>
                         ))}
                       </select>

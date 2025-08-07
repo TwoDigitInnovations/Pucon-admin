@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
 import DataTable from '../components/DataTable';
 import Swal from 'sweetalert2';
-import { fetchSubCategories, createSubCategoryWithImage, updateSubCategoryWithImage, deleteSubCategory, fetchCategories, fetchLanguages } from '../context/apiHelpers';
+import { fetchSubCategories, createSubCategoryWithImage, updateSubCategoryWithImage, deleteSubCategory, fetchCategories, fetchLanguages, fetchSuperCategories, fetchCountries } from '../context/apiHelpers';
 import isAuth from '@/components/isAuth';
 
 function SubCategories() {
@@ -19,14 +19,18 @@ function SubCategories() {
   const [imagePreview, setImagePreview] = useState(null);
   const [formData, setFormData] = useState({
     language_id: '',
+    super_category_id: '',
     category_id: '',
     name: '',
+    order: '',
     status: 'active'
   });
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState(null);
+  const [superCategories, setSuperCategories] = useState([]);
+  const [countryList, setCountryList] = useState([]);
 
   // Fetch sub categories and categories on component mount
   useEffect(() => {
@@ -39,10 +43,12 @@ function SubCategories() {
       setError(null);
 
       // Fetch sub categories, categories, and languages
-      const [subCategoriesResponse, categoriesResponse, languagesResponse] = await Promise.all([
+      const [subCategoriesResponse, categoriesResponse, languagesResponse, superCategoriesResponse, countryResponse] = await Promise.all([
         fetchSubCategories(page, 10),
         fetchCategories(),
-        fetchLanguages()
+        fetchLanguages(),
+        fetchSuperCategories(),
+        fetchCountries(),
       ]);
 
       if (subCategoriesResponse.success) {
@@ -58,6 +64,15 @@ function SubCategories() {
 
       if (languagesResponse.success) {
         setLanguages(languagesResponse.data || []);
+      }
+
+      if (superCategoriesResponse.success) {
+        setSuperCategories(superCategoriesResponse.data || []);
+      }
+
+      if (countryResponse.success) {
+        setCountryList(countryResponse.data || []);
+        console.log(countryResponse.data)
       }
     } catch (err) {
       console.error('Error loading data:', err);
@@ -100,6 +115,16 @@ function SubCategories() {
 
   const columns = [
     {
+      // key: 'id',
+      label: "Index",
+      render: (value, item, index) => {
+        console.log(index)
+        return (
+          <div className="font-medium text-gray-900">{index + 1}</div>
+        )
+      }
+    },
+    {
       key: 'image',
       label: 'Image',
       render: (value) => (
@@ -138,6 +163,26 @@ function SubCategories() {
       }
     },
     {
+      key: 'country',
+      label: 'Country',
+      render: (value) => {
+        console.log(value)
+        if (!value) return <div>No Country</div>;
+        return (
+          <div>
+            <div className="font-medium text-gray-900">{value?.country_name}</div>
+          </div>
+        );
+      }
+    },
+    {
+      key: 'super_category_id',
+      label: 'Super Category Name',
+      render: (value) => (
+        <div className="font-medium text-gray-900">{value?.name || 'N/A'}</div>
+      )
+    },
+    {
       key: 'category_id',
       label: 'Category',
       render: (value) => (
@@ -149,6 +194,13 @@ function SubCategories() {
       label: 'Sub Category Name',
       render: (value) => (
         <div className="font-medium text-gray-900">{value || ''}</div>
+      )
+    },
+    {
+      key: 'order',
+      label: 'Order',
+      render: (value) => (
+        <div className="font-medium text-gray-900">{value}</div>
       )
     },
     {
@@ -171,8 +223,11 @@ function SubCategories() {
     setEditingItem(null);
     setFormData({
       language_id: '',
+      country: '',
+      super_category_id: '',
       category_id: '',
       name: '',
+      order: '',
       status: 'active'
     });
     clearImage();
@@ -180,11 +235,16 @@ function SubCategories() {
   };
 
   const handleEdit = (item) => {
+    console.log(item)
     setEditingItem(item);
+    // return
     setFormData({
       language_id: item.language_id._id || item.language_id,
+      country: item.country?._id,
+      super_category_id: item.super_category_id?._id || item.super_category_id,
       category_id: item.category_id._id || item.category_id,
       name: item.name,
+      order: item.order,
       status: item.status
     });
     setSelectedImage(null);
@@ -248,14 +308,20 @@ function SubCategories() {
       // Create FormData for multipart/form-data
       const formDataToSend = new FormData();
       formDataToSend.append('language_id', formData.language_id);
+      formDataToSend.append('country', formData.country);
+      formDataToSend.append('super_category_id', formData.super_category_id);
       formDataToSend.append('category_id', formData.category_id);
       formDataToSend.append('name', formData.name);
+      formDataToSend.append('order', formData.order);
       formDataToSend.append('status', formData.status);
 
       console.log('Form data being sent:', {
         language_id: formData.language_id,
+        country: formData.country,
+        super_category_id: formData.super_category_id,
         category_id: formData.category_id,
         name: formData.name,
+        order: formData.order,
         status: formData.status,
         hasImage: !!selectedImage
       });
@@ -376,7 +442,7 @@ function SubCategories() {
                       </label>
                       <select
                         value={formData.language_id}
-                        onChange={(e) => setFormData({ ...formData, language_id: e.target.value })}
+                        onChange={(e) => setFormData({ ...formData, language_id: e.target.value, country: '', super_category_id: '', category_id: '', })}
                         className="input-field text-gray-700"
                         required
                       >
@@ -391,16 +457,54 @@ function SubCategories() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Country
+                      </label>
+                      <select disabled={!formData.language_id}
+                        value={formData.country}
+                        onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                        className="input-field text-gray-700"
+                        required
+                      >
+                        <option value="">{countryList.filter(f => f.language_id._id === formData.language_id).length > 0 ? 'Select Country' : 'No Country Available'}</option>
+                        {countryList.filter(f => f.language_id._id === formData.language_id).map((lang) => (
+                          <option key={lang._id} value={lang._id}>
+                            {lang.country_name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Super Category
+                      </label>
+                      <select disabled={!formData.language_id || !formData.country}
+                        value={formData.super_category_id}
+                        onChange={(e) => setFormData({ ...formData, super_category_id: e.target.value })}
+                        className="input-field text-gray-700"
+                        required
+                      >
+                        <option value="">{superCategories.filter(f => f.country._id === formData.country).length > 0 ? 'Select Super Category' : 'No Super Category Available'}</option>
+                        {superCategories.filter(f => f.country._id === formData.country).map((superCat) => (
+                          <option key={superCat._id} value={superCat._id}>
+                            {superCat.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
                         Category
                       </label>
-                      <select
+                      <select disabled={!formData.language_id || !formData.country || !formData.super_category_id}
                         value={formData.category_id}
                         onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       >
-                        <option value="">Select Category</option>
-                        {categories.map((category) => (
+                        <option value="">{categories.filter(f => f.super_category_id._id === formData.super_category_id).length > 0 ? 'Select Category' : 'No Category Available'}</option>
+                        {categories.filter(f => f.super_category_id._id === formData.super_category_id).map((category) => (
                           <option key={category._id} value={category._id}>
                             {category.name}
                           </option>
@@ -416,6 +520,19 @@ function SubCategories() {
                         type="text"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className="input-field text-gray-700"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Order
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.order}
+                        onChange={(e) => setFormData({ ...formData, order: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       />

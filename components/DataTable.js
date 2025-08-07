@@ -150,7 +150,7 @@ const DataTable = ({
                 <tr key={item.id || index} className="table-row-hover">
                   {columns.map((column) => (
                     <td key={column.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {column.render ? column.render(item[column.key], item) : item[column.key]}
+                      {column.render ? column.render(item[column.key], item, index) : item[column.key]}
                     </td>
                   ))}
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
