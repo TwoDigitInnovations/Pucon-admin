@@ -53,7 +53,8 @@ function Content() {
   const [subCategories, setSubCategories] = useState([]);
   const [formData, setFormData] = useState({
     language_id: '',
-    country_id: '',
+    // country_id: '',
+    country: '',
     super_category_id: '',
     category_id: '',
     sub_category_id: '',
@@ -152,7 +153,8 @@ function Content() {
       }
     },
     {
-      key: 'country_id',
+      // key: 'country_id',
+      key: 'country',
       label: 'Country',
       render: (value) => (
         <div>
@@ -219,7 +221,8 @@ function Content() {
     setEditingItem(null);
     setFormData({
       language_id: '',
-      country_id: '',
+      // country_id: '',
+      country: '',
       super_category_id: '',
       category_id: '',
       sub_category_id: '',
@@ -233,7 +236,7 @@ function Content() {
   const handleEdit = (item) => {
     console.log('Edit item:', item);
     console.log('Language ID:', item.language_id);
-    console.log('Country ID:', item.country_id);
+    // console.log('Country ID:', item.country_id);
     console.log('Super Category ID:', item.super_category_id);
     console.log('Category ID:', item.category_id);
     console.log('Sub Category ID:', item.sub_category_id);
@@ -241,7 +244,8 @@ function Content() {
     setEditingItem(item);
     setFormData({
       language_id: typeof item.language_id === 'object' ? item.language_id._id : item.language_id,
-      country_id: typeof item.country_id === 'object' ? item.country_id._id : item.country_id,
+      // country_id: typeof item.country_id === 'object' ? item.country_id._id : item.country_id,
+      country: typeof item.country === 'object' ? item.country._id : item.country,
       super_category_id: typeof item.super_category_id === 'object' ? item.super_category_id._id : item.super_category_id,
       category_id: typeof item.category_id === 'object' ? item.category_id._id : item.category_id,
       sub_category_id: typeof item.sub_category_id === 'object' ? item.sub_category_id._id : item.sub_category_id,
@@ -467,7 +471,7 @@ function Content() {
                       </label>
                       <select
                         value={formData.language_id}
-                        onChange={(e) => setFormData({ ...formData, language_id: e.target.value })}
+                        onChange={(e) => setFormData({ ...formData, language_id: e.target.value, country: '', super_category_id: '', category_id: '', sub_category_id: '', })}
                         className="input-field text-gray-700"
                         required
                       >
@@ -484,14 +488,15 @@ function Content() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Country
                       </label>
-                      <select
-                        value={formData.country_id}
-                        onChange={(e) => setFormData({ ...formData, country_id: e.target.value })}
+                      <select disabled={!formData.language_id}
+                        value={formData.country}
+                        onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       >
-                        <option value="">Select Country</option>
-                        {countries.map((country) => (
+                        {/* <option value="">Select Country</option> */}
+                        <option value="">{countries.filter(f => f.language_id._id === formData.language_id).length > 0 ? 'Select Country' : 'No Country Available'}</option>
+                        {countries.filter(f => f.language_id._id === formData.language_id).map((country) => (
                           <option key={country._id} value={country._id}>
                             {country.country_name}
                           </option>
@@ -503,14 +508,15 @@ function Content() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Super Category
                       </label>
-                      <select
+                      <select disabled={!formData.language_id || !formData.country}
                         value={formData.super_category_id}
                         onChange={(e) => setFormData({ ...formData, super_category_id: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       >
-                        <option value="">Select Super Category</option>
-                        {superCategories.map((superCat) => (
+                        {/* <option value="">Select Super Category</option> */}
+                        <option value="">{superCategories.filter(f => f.country._id === formData.country).length > 0 ? 'Select Super Category' : 'No Super Category Available'}</option>
+                        {superCategories.filter(f => f.country._id === formData.country).map((superCat) => (
                           <option key={superCat._id} value={superCat._id}>
                             {superCat.name}
                           </option>
@@ -522,14 +528,15 @@ function Content() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Category
                       </label>
-                      <select
+                      <select disabled={!formData.language_id || !formData.country || !formData.super_category_id}
                         value={formData.category_id}
                         onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       >
-                        <option value="">Select Category</option>
-                        {categories.map((category) => (
+                        {/* <option value="">Select Category</option> */}
+                        <option value="">{categories.filter(f => f.super_category_id._id === formData.super_category_id).length > 0 ? 'Select Category' : 'No Category Available'}</option>
+                        {categories.filter(f => f.super_category_id._id === formData.super_category_id).map((category) => (
                           <option key={category._id} value={category._id}>
                             {category.name}
                           </option>
@@ -541,14 +548,15 @@ function Content() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Sub Category
                       </label>
-                      <select
+                      <select disabled={!formData.language_id || !formData.country || !formData.super_category_id || !formData.category_id}
                         value={formData.sub_category_id}
                         onChange={(e) => setFormData({ ...formData, sub_category_id: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       >
-                        <option value="">Select Sub Category</option>
-                        {subCategories.map((subCat) => (
+                        {/* <option value="">Select Sub Category</option> */}
+                        <option value="">{subCategories.filter(f => f.category_id._id === formData.category_id).length > 0 ? 'Select Sub Category' : 'No Sub Category Available'}</option>
+                        {subCategories.filter(f => f.category_id._id === formData.category_id).map((subCat) => (
                           <option key={subCat._id} value={subCat._id}>
                             {subCat.name}
                           </option>
