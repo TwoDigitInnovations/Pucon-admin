@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
 import DataTable from '../components/DataTable';
 import Swal from 'sweetalert2';
-import { fetchCategories, createCategoryWithImage, updateCategoryWithImage, deleteCategory, fetchSuperCategories, fetchLanguages, fetchCountries } from '../context/apiHelpers';
+import { fetchCategories, createCategoryWithImage, updateCategoryWithImage, deleteCategory, fetchSuperCategories, fetchLanguages, fetchCountries, getAllLanguagess, getAllCountry, getAllSuperCategory } from '../context/apiHelpers';
 import isAuth from '@/components/isAuth';
 
 function Categories() {
@@ -15,6 +15,7 @@ function Categories() {
   const [categories, setCategories] = useState([]);
   const [superCategories, setSuperCategories] = useState([]);
   const [languages, setLanguages] = useState([]);
+  const [allLanguages, setAllLanguages] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [formData, setFormData] = useState({
@@ -29,6 +30,8 @@ function Categories() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState(null);
   const [countryList, setCountryList] = useState([]);
+  const [allCountryList, setAllCountryList] = useState([]);
+  const [allSuperCategoryList, setAllSuperCategoryList] = useState([]);
 
   // Fetch categories and super categories on component mount
   useEffect(() => {
@@ -41,11 +44,14 @@ function Categories() {
       setError(null);
 
       // Fetch categories, super categories, and languages
-      const [categoriesResponse, superCategoriesResponse, languagesResponse, countryResponse] = await Promise.all([
+      const [categoriesResponse, superCategoriesResponse, languagesResponse, countryResponse, allLanguagessResponse, allCountryResponse, allSuperCategoryResponse] = await Promise.all([
         fetchCategories(page, 10),
         fetchSuperCategories(),
         fetchLanguages(),
-        fetchCountries()
+        fetchCountries(),
+        getAllLanguagess(),
+        getAllCountry(),
+        getAllSuperCategory(),
       ]);
 
       if (categoriesResponse.success) {
@@ -68,6 +74,17 @@ function Categories() {
         console.log(countryResponse.data)
       }
 
+      if (allLanguagessResponse.success) {
+        setAllLanguages(allLanguagessResponse.data || []);
+      }
+
+      if (allCountryResponse.success) {
+        setAllCountryList(allCountryResponse.data || []);
+        console.log(countryResponse.data)
+      }
+      if (allSuperCategoryResponse.success) {
+        setAllSuperCategoryList(allSuperCategoryResponse.data || []);
+      }
     } catch (err) {
       console.error('Error loading data:', err);
       setError(err.message || 'Failed to load data');
@@ -419,7 +436,7 @@ function Categories() {
                         required
                       >
                         <option value="">Select Language</option>
-                        {languages.map((lang) => (
+                        {allLanguages.map((lang) => (
                           <option key={lang._id} value={lang._id}>
                             {lang.language_name} ({lang.language_code})
                           </option>
@@ -437,8 +454,8 @@ function Categories() {
                         className="input-field text-gray-700"
                         required
                       >
-                        <option value="">{countryList.filter(f => f.language_id._id === formData.language_id).length > 0 ? 'Select Country' : 'No Country Available'}</option>
-                        {countryList.filter(f => f.language_id._id === formData.language_id).map((lang) => (
+                        <option value="">{allCountryList.filter(f => f.language_id._id === formData.language_id).length > 0 ? 'Select Country' : 'No Country Available'}</option>
+                        {allCountryList.filter(f => f.language_id._id === formData.language_id).map((lang) => (
                           <option key={lang._id} value={lang._id}>
                             {lang.country_name}
                           </option>
@@ -456,8 +473,8 @@ function Categories() {
                         className="input-field text-gray-700"
                         required
                       >
-                        <option value="">{superCategories.filter(f => f.country._id === formData.country).length > 0 ? 'Select Super Category' : 'No Super Category Available'}</option>
-                        {superCategories.filter(f => f.country._id === formData.country).map((superCat) => (
+                        <option value="">{allSuperCategoryList.filter(f => f.country?._id === formData.country).length > 0 ? 'Select Super Category' : 'No Super Category Available'}</option>
+                        {allSuperCategoryList.filter(f => f.country?._id === formData.country).map((superCat) => (
                           <option key={superCat._id} value={superCat._id}>
                             {superCat.name}
                           </option>

@@ -15,7 +15,12 @@ import {
   fetchCountries,
   fetchSuperCategories,
   fetchCategories,
-  fetchSubCategories
+  fetchSubCategories,
+  getAllLanguagess,
+  getAllCountry,
+  getAllSuperCategory,
+  getAllCategory,
+  getAllSubCategory,
 } from '../context/apiHelpers';
 import isAuth from '@/components/isAuth';
 
@@ -67,8 +72,11 @@ function Content() {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState(null);
-
-
+  const [allLanguages, setAllLanguages] = useState([]);
+  const [allCountryList, setAllCountryList] = useState([]);
+  const [allSuperCategoryList, setAllSuperCategoryList] = useState([]);
+  const [allCategoryList, setAllCategoryList] = useState([]);
+  const [allSubCategoryList, setAllSubCategoryList] = useState([]);
 
   // Fetch all data on component mount
   useEffect(() => {
@@ -82,20 +90,19 @@ function Content() {
 
       // Fetch all required data
       const [
-        contentResponse,
-        languagesResponse,
-        countriesResponse,
-        superCategoriesResponse,
-        categoriesResponse,
-        subCategoriesResponse
-      ] = await Promise.all([
-        fetchContent(page, 10),
-        fetchLanguages(),
-        fetchCountries(),
-        fetchSuperCategories(),
-        fetchCategories(),
-        fetchSubCategories()
-      ]);
+        contentResponse, languagesResponse, countriesResponse, superCategoriesResponse, categoriesResponse, subCategoriesResponse, allLanguagessResponse, allCountryResponse, allSuperCategoryResponse, allCategoryResponse, allSubCategoryResponse] = await Promise.all([
+          fetchContent(page, 10),
+          fetchLanguages(),
+          fetchCountries(),
+          fetchSuperCategories(),
+          fetchCategories(),
+          fetchSubCategories(),
+          getAllLanguagess(),
+          getAllCountry(),
+          getAllSuperCategory(),
+          getAllCategory(),
+          getAllSubCategory(),
+        ]);
 
       if (contentResponse.success) {
         console.log('Content Data:', contentResponse.data);
@@ -124,6 +131,26 @@ function Content() {
 
       if (subCategoriesResponse.success) {
         setSubCategories(subCategoriesResponse.data || []);
+      }
+
+      if (allLanguagessResponse.success) {
+        setAllLanguages(allLanguagessResponse.data || []);
+      }
+
+      if (allCountryResponse.success) {
+        setAllCountryList(allCountryResponse.data || []);
+      }
+
+      if (allSuperCategoryResponse.success) {
+        setAllSuperCategoryList(allSuperCategoryResponse.data || []);
+      }
+
+      if (allCategoryResponse.success) {
+        setAllCategoryList(allCategoryResponse.data || []);
+      }
+
+      if (allSubCategoryResponse.success) {
+        setAllSubCategoryList(allSubCategoryResponse.data || []);
       }
     } catch (err) {
       console.error('Error loading data:', err);
@@ -157,9 +184,10 @@ function Content() {
       key: 'country',
       label: 'Country',
       render: (value) => (
+        console.log(value),
         <div>
           <div className="font-medium text-gray-900">{value?.country_name || ''}</div>
-          <div className="text-sm text-gray-500">{value?.country_code || ''}</div>
+          {/* <div className="text-sm text-gray-500">{value?.country_code || ''}</div> */}
         </div>
       )
     },
@@ -167,11 +195,12 @@ function Content() {
       key: 'super_category_id',
       label: 'Super Category',
       render: (value) => (
+        console.log(value),
         <div>
           <div className="font-medium text-gray-900">{value?.name || ''}</div>
-          <div className="text-sm text-gray-500 max-w-xs truncate">
+          {/* <div className="text-sm text-gray-500 max-w-xs truncate">
             {value?.description ? (value.description.length > 30 ? value.description.substring(0, 30) + '...' : value.description) : ''}
-          </div>
+          </div> */}
         </div>
       )
     },
@@ -179,6 +208,7 @@ function Content() {
       key: 'category_id',
       label: 'Category',
       render: (value) => (
+        console.log(value),
         <div>
           <div className="font-medium text-gray-900">{value?.name || ''}</div>
           <div className="text-sm text-gray-500">{value?.status || ''}</div>
@@ -245,9 +275,9 @@ function Content() {
     setFormData({
       language_id: typeof item.language_id === 'object' ? item.language_id._id : item.language_id,
       // country_id: typeof item.country_id === 'object' ? item.country_id._id : item.country_id,
-      country: typeof item.country === 'object' ? item.country._id : item.country,
-      super_category_id: typeof item.super_category_id === 'object' ? item.super_category_id._id : item.super_category_id,
-      category_id: typeof item.category_id === 'object' ? item.category_id._id : item.category_id,
+      country: typeof item.country === 'object' ? item.country?._id : item.country,
+      super_category_id: typeof item.super_category_id === 'object' ? item.super_category_id?._id : item.super_category_id,
+      category_id: typeof item.category_id === 'object' ? item.category_id?._id : item.category_id,
       sub_category_id: typeof item.sub_category_id === 'object' ? item.sub_category_id._id : item.sub_category_id,
       content: item.content,
       status: item.status
@@ -476,7 +506,7 @@ function Content() {
                         required
                       >
                         <option value="">Select Language</option>
-                        {languages.map((language) => (
+                        {allLanguages.map((language) => (
                           <option key={language._id} value={language._id}>
                             {language.language_name} ({language.language_code})
                           </option>
@@ -495,8 +525,8 @@ function Content() {
                         required
                       >
                         {/* <option value="">Select Country</option> */}
-                        <option value="">{countries.filter(f => f.language_id._id === formData.language_id).length > 0 ? 'Select Country' : 'No Country Available'}</option>
-                        {countries.filter(f => f.language_id._id === formData.language_id).map((country) => (
+                        <option value="">{allCountryList.filter(f => f.language_id._id === formData.language_id).length > 0 ? 'Select Country' : 'No Country Available'}</option>
+                        {allCountryList.filter(f => f.language_id._id === formData.language_id).map((country) => (
                           <option key={country._id} value={country._id}>
                             {country.country_name}
                           </option>
@@ -515,8 +545,8 @@ function Content() {
                         required
                       >
                         {/* <option value="">Select Super Category</option> */}
-                        <option value="">{superCategories.filter(f => f.country._id === formData.country).length > 0 ? 'Select Super Category' : 'No Super Category Available'}</option>
-                        {superCategories.filter(f => f.country._id === formData.country).map((superCat) => (
+                        <option value="">{allSuperCategoryList.filter(f => f.country?._id === formData.country).length > 0 ? 'Select Super Category' : 'No Super Category Available'}</option>
+                        {allSuperCategoryList.filter(f => f.country?._id === formData.country).map((superCat) => (
                           <option key={superCat._id} value={superCat._id}>
                             {superCat.name}
                           </option>
@@ -535,8 +565,8 @@ function Content() {
                         required
                       >
                         {/* <option value="">Select Category</option> */}
-                        <option value="">{categories.filter(f => f.super_category_id._id === formData.super_category_id).length > 0 ? 'Select Category' : 'No Category Available'}</option>
-                        {categories.filter(f => f.super_category_id._id === formData.super_category_id).map((category) => (
+                        <option value="">{allCategoryList.filter(f => f.super_category_id._id === formData.super_category_id).length > 0 ? 'Select Category' : 'No Category Available'}</option>
+                        {allCategoryList.filter(f => f.super_category_id._id === formData.super_category_id).map((category) => (
                           <option key={category._id} value={category._id}>
                             {category.name}
                           </option>
@@ -555,8 +585,8 @@ function Content() {
                         required
                       >
                         {/* <option value="">Select Sub Category</option> */}
-                        <option value="">{subCategories.filter(f => f.category_id._id === formData.category_id).length > 0 ? 'Select Sub Category' : 'No Sub Category Available'}</option>
-                        {subCategories.filter(f => f.category_id._id === formData.category_id).map((subCat) => (
+                        <option value="">{allSubCategoryList.filter(f => f.category_id?._id === formData.category_id).length > 0 ? 'Select Sub Category' : 'No Sub Category Available'}</option>
+                        {allSubCategoryList.filter(f => f.category_id?._id === formData.category_id).map((subCat) => (
                           <option key={subCat._id} value={subCat._id}>
                             {subCat.name}
                           </option>

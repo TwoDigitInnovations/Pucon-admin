@@ -1,8 +1,9 @@
 import axios from "axios";
-// const ConstantsUrl = "http://localhost:3000/api/";
+const ConstantsUrl = "http://localhost:3000/api/";
 
 // const ConstantsUrl = "https://pucon-backend.onrender.com/api/";
-const ConstantsUrl = "https://apis.travelertips.cl/api/";
+
+// const ConstantsUrl = "https://apis.travelertips.cl/api/";
 
 axios.interceptors.response.use(
   (response) => response,

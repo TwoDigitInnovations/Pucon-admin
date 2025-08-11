@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
 import DataTable from '../components/DataTable';
 import Swal from 'sweetalert2';
-import { fetchSubCategories, createSubCategoryWithImage, updateSubCategoryWithImage, deleteSubCategory, fetchCategories, fetchLanguages, fetchSuperCategories, fetchCountries } from '../context/apiHelpers';
+import { fetchSubCategories, createSubCategoryWithImage, updateSubCategoryWithImage, deleteSubCategory, fetchCategories, fetchLanguages, fetchSuperCategories, fetchCountries, getAllLanguagess, getAllCountry, getAllSuperCategory, getAllCategory } from '../context/apiHelpers';
 import isAuth from '@/components/isAuth';
 
 function SubCategories() {
@@ -31,6 +31,10 @@ function SubCategories() {
   const [pagination, setPagination] = useState(null);
   const [superCategories, setSuperCategories] = useState([]);
   const [countryList, setCountryList] = useState([]);
+  const [allLanguages, setAllLanguages] = useState([]);
+  const [allCountryList, setAllCountryList] = useState([]);
+  const [allSuperCategoryList, setAllSuperCategoryList] = useState([]);
+  const [allCategoryList, setAllCategoryList] = useState([]);
 
   // Fetch sub categories and categories on component mount
   useEffect(() => {
@@ -43,12 +47,16 @@ function SubCategories() {
       setError(null);
 
       // Fetch sub categories, categories, and languages
-      const [subCategoriesResponse, categoriesResponse, languagesResponse, superCategoriesResponse, countryResponse] = await Promise.all([
+      const [subCategoriesResponse, categoriesResponse, languagesResponse, superCategoriesResponse, countryResponse, allLanguagessResponse, allCountryResponse, allSuperCategoryResponse, allCategoryResponse] = await Promise.all([
         fetchSubCategories(page, 10),
         fetchCategories(),
         fetchLanguages(),
         fetchSuperCategories(),
         fetchCountries(),
+        getAllLanguagess(),
+        getAllCountry(),
+        getAllSuperCategory(),
+        getAllCategory(),
       ]);
 
       if (subCategoriesResponse.success) {
@@ -73,6 +81,23 @@ function SubCategories() {
       if (countryResponse.success) {
         setCountryList(countryResponse.data || []);
         console.log(countryResponse.data)
+      }
+
+      if (allLanguagessResponse.success) {
+        setAllLanguages(allLanguagessResponse.data || []);
+      }
+
+      if (allCountryResponse.success) {
+        setAllCountryList(allCountryResponse.data || []);
+        console.log(countryResponse.data)
+      }
+
+      if (allSuperCategoryResponse.success) {
+        setAllSuperCategoryList(allSuperCategoryResponse.data || []);
+      }
+
+      if (allCategoryResponse.success) {
+        setAllCategoryList(allCategoryResponse.data || []);
       }
     } catch (err) {
       console.error('Error loading data:', err);
@@ -242,7 +267,7 @@ function SubCategories() {
       language_id: item.language_id._id || item.language_id,
       country: item.country?._id,
       super_category_id: item.super_category_id?._id || item.super_category_id,
-      category_id: item.category_id._id || item.category_id,
+      category_id: item.category_id?._id || item.category_id,
       name: item.name,
       order: item.order,
       status: item.status
@@ -447,7 +472,7 @@ function SubCategories() {
                         required
                       >
                         <option value="">Select Language</option>
-                        {languages.map((language) => (
+                        {allLanguages.map((language) => (
                           <option key={language._id} value={language._id}>
                             {language.language_name} ({language.language_code})
                           </option>
@@ -465,8 +490,8 @@ function SubCategories() {
                         className="input-field text-gray-700"
                         required
                       >
-                        <option value="">{countryList.filter(f => f.language_id._id === formData.language_id).length > 0 ? 'Select Country' : 'No Country Available'}</option>
-                        {countryList.filter(f => f.language_id._id === formData.language_id).map((lang) => (
+                        <option value="">{allCountryList.filter(f => f.language_id._id === formData.language_id).length > 0 ? 'Select Country' : 'No Country Available'}</option>
+                        {allCountryList.filter(f => f.language_id._id === formData.language_id).map((lang) => (
                           <option key={lang._id} value={lang._id}>
                             {lang.country_name}
                           </option>
@@ -484,8 +509,8 @@ function SubCategories() {
                         className="input-field text-gray-700"
                         required
                       >
-                        <option value="">{superCategories.filter(f => f.country._id === formData.country).length > 0 ? 'Select Super Category' : 'No Super Category Available'}</option>
-                        {superCategories.filter(f => f.country._id === formData.country).map((superCat) => (
+                        <option value="">{allSuperCategoryList.filter(f => f.country?._id === formData.country).length > 0 ? 'Select Super Category' : 'No Super Category Available'}</option>
+                        {allSuperCategoryList.filter(f => f.country?._id === formData.country).map((superCat) => (
                           <option key={superCat._id} value={superCat._id}>
                             {superCat.name}
                           </option>
@@ -503,8 +528,8 @@ function SubCategories() {
                         className="input-field text-gray-700"
                         required
                       >
-                        <option value="">{categories.filter(f => f.super_category_id._id === formData.super_category_id).length > 0 ? 'Select Category' : 'No Category Available'}</option>
-                        {categories.filter(f => f.super_category_id._id === formData.super_category_id).map((category) => (
+                        <option value="">{allCategoryList.filter(f => f.super_category_id._id === formData.super_category_id).length > 0 ? 'Select Category' : 'No Category Available'}</option>
+                        {allCategoryList.filter(f => f.super_category_id._id === formData.super_category_id).map((category) => (
                           <option key={category._id} value={category._id}>
                             {category.name}
                           </option>

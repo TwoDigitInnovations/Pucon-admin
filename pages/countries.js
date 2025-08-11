@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
 import DataTable from '../components/DataTable';
 import Swal from 'sweetalert2';
-import { fetchCountries, createCountryWithImage, updateCountryWithImage, deleteCountry, fetchLanguages } from '../context/apiHelpers';
+import { fetchCountries, createCountryWithImage, updateCountryWithImage, deleteCountry, fetchLanguages, getAllLanguagess } from '../context/apiHelpers';
 import isAuth from '@/components/isAuth';
 
 function Countries() {
@@ -14,6 +14,7 @@ function Countries() {
   const [error, setError] = useState(null);
   const [countries, setCountries] = useState([]);
   const [languages, setLanguages] = useState([]);
+  const [allLanguages, setAllLanguages] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedMapImage, setSelectedMapImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -40,9 +41,10 @@ function Countries() {
       setError(null);
 
       // Fetch both countries and languages
-      const [countriesResponse, languagesResponse] = await Promise.all([
+      const [countriesResponse, languagesResponse, allLanguagessResponse] = await Promise.all([
         fetchCountries(page, 10),
-        fetchLanguages()
+        fetchLanguages(),
+        getAllLanguagess()
       ]);
 
       if (countriesResponse.success) {
@@ -54,6 +56,9 @@ function Countries() {
 
       if (languagesResponse.success) {
         setLanguages(languagesResponse.data || []);
+      }
+      if (allLanguagessResponse.success) {
+        setAllLanguages(allLanguagessResponse.data || []);
       }
     } catch (err) {
       console.error('Error loading data:', err);
@@ -524,7 +529,7 @@ function Countries() {
                         required
                       >
                         <option value="">Select Language</option>
-                        {languages.map(lang => (
+                        {allLanguages.map(lang => (
                           <option key={lang._id} value={lang._id}>
                             {lang.language_name} ({lang.language_code})
                           </option>

@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
 import DataTable from '../components/DataTable';
 import Swal from 'sweetalert2';
-import { fetchSuperCategories, createSuperCategoryWithImage, updateSuperCategoryWithImage, deleteSuperCategory, fetchLanguages, fetchCountries } from '../context/apiHelpers';
+import { fetchSuperCategories, createSuperCategoryWithImage, updateSuperCategoryWithImage, deleteSuperCategory, fetchLanguages, fetchCountries, getAllCountry, getAllLanguagess } from '../context/apiHelpers';
 import isAuth from '@/components/isAuth';
 
 function SuperCategories() {
@@ -15,6 +15,8 @@ function SuperCategories() {
   const [superCategories, setSuperCategories] = useState([]);
   const [languages, setLanguages] = useState([]);
   const [countryList, setCountryList] = useState([]);
+  const [allCountryList, setAllCountryList] = useState([]);
+  const [allLanguages, setAllLanguages] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [formData, setFormData] = useState({
@@ -40,10 +42,12 @@ function SuperCategories() {
       setError(null);
 
       // Fetch both super categories and languages
-      const [superCategoriesResponse, languagesResponse, countryResponse] = await Promise.all([
+      const [superCategoriesResponse, languagesResponse, countryResponse, allCountryResponse, allLanguagessResponse] = await Promise.all([
         fetchSuperCategories(page, 10),
         fetchLanguages(),
-        fetchCountries()
+        fetchCountries(),
+        getAllCountry(),
+        getAllLanguagess()
       ]);
 
       if (superCategoriesResponse.success) {
@@ -59,7 +63,12 @@ function SuperCategories() {
 
       if (countryResponse.success) {
         setCountryList(countryResponse.data || []);
-        console.log(countryResponse.data)
+      }
+      if (allCountryResponse.success) {
+        setAllCountryList(allCountryResponse.data || []);
+      }
+      if (allLanguagessResponse.success) {
+        setAllLanguages(allLanguagessResponse.data || []);
       }
     } catch (err) {
       console.error('Error loading data:', err);
@@ -74,7 +83,6 @@ function SuperCategories() {
       // key: 'id',
       label: "Index",
       render: (value, item, index) => {
-        console.log(index)
         return (
           <div className="font-medium text-gray-900">{index + 1}</div>
         )
@@ -116,7 +124,6 @@ function SuperCategories() {
       key: 'country',
       label: 'Country',
       render: (value) => {
-        console.log(value)
         if (!value) return <div>No Country</div>;
         return (
           <div>
@@ -207,7 +214,7 @@ function SuperCategories() {
     setEditingItem(item);
     setFormData({
       language_id: item.language_id._id,
-      country: item.country,
+      country: item.country._id,
       name: item.name,
       // description: item.description,
       status: item.status
@@ -454,7 +461,7 @@ function SuperCategories() {
                         required
                       >
                         <option value="">Select Language</option>
-                        {languages.map((lang) => (
+                        {allLanguages.map((lang) => (
                           <option key={lang._id} value={lang._id}>
                             {lang.language_name} ({lang.language_code})
                           </option>
@@ -472,8 +479,8 @@ function SuperCategories() {
                         className="input-field text-gray-700"
                         required
                       >
-                        <option value="">{countryList.filter(f => f.language_id._id === formData.language_id).length > 0 ? 'Select Country' : 'No Country Available'}</option>
-                        {countryList.filter(f => f.language_id._id === formData.language_id).map((lang) => (
+                        <option value="">{allCountryList.filter(f => f.language_id._id === formData.language_id).length > 0 ? 'Select Country' : 'No Country Available'}</option>
+                        {allCountryList.filter(f => f.language_id._id === formData.language_id).map((lang) => (
                           <option key={lang._id} value={lang._id}>
                             {lang.country_name}
                           </option>
