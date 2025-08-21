@@ -23,6 +23,7 @@ function Categories() {
     country: '',
     super_category_id: '',
     name: '',
+    order: '',
     status: 'active'
   });
 
@@ -201,6 +202,13 @@ function Categories() {
       )
     },
     {
+      key: 'order',
+      label: 'Order',
+      render: (value) => (
+        <div className="font-medium text-gray-900">{value}</div>
+      )
+    },
+    {
       key: 'status',
       label: 'Status',
       render: (value) => (
@@ -223,6 +231,7 @@ function Categories() {
       country: '',
       super_category_id: '',
       name: '',
+      order: '',
       status: 'active'
     });
     clearImage();
@@ -237,6 +246,7 @@ function Categories() {
       country: item.country._id,
       super_category_id: item.super_category_id._id || item.super_category_id,
       name: item.name,
+      order: item.order,
       status: item.status
     });
     setSelectedImage(null);
@@ -303,6 +313,7 @@ function Categories() {
       formDataToSend.append('country', formData.country);
       formDataToSend.append('super_category_id', formData.super_category_id);
       formDataToSend.append('name', formData.name);
+      formDataToSend.append('order', formData.order);
       formDataToSend.append('status', formData.status);
 
       console.log('Form data being sent:', {
@@ -310,6 +321,7 @@ function Categories() {
         country: formData.country,
         super_category_id: formData.super_category_id,
         name: formData.name,
+        order: formData.order,
         status: formData.status,
         // hasImage: !!selectedImage
       });
@@ -490,6 +502,19 @@ function Categories() {
                         type="text"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className="input-field text-gray-700"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Order
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.order}
+                        onChange={(e) => setFormData({ ...formData, order: e.target.value })}
                         className="input-field text-gray-700"
                         required
                       />

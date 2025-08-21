@@ -23,6 +23,7 @@ function Countries() {
     language_id: '',
     country_name: '',
     // country_code: '',
+    order: '',
     status: 'active'
   });
 
@@ -137,6 +138,13 @@ function Countries() {
     //   )
     // },
     {
+      key: 'order',
+      label: 'Order',
+      render: (value) => (
+        <div className="font-medium text-gray-900">{value}</div>
+      )
+    },
+    {
       key: 'status',
       label: 'Status',
       render: (value) => (
@@ -210,6 +218,7 @@ function Countries() {
       language_id: '',
       country_name: '',
       // country_code: '',
+      order: '',
       status: 'active'
     });
     clearAllImages();
@@ -225,6 +234,7 @@ function Countries() {
       language_id: item.language_id._id,
       country_name: item.country_name,
       // country_code: item.country_code,
+      order: item.order,
       status: item.status
     });
     setSelectedImage(null);
@@ -293,12 +303,14 @@ function Countries() {
       formDataToSend.append('language_id', formData.language_id);
       formDataToSend.append('country_name', formData.country_name);
       // formDataToSend.append('country_code', formData.country_code);
+      formDataToSend.append('order', formData.order);
       formDataToSend.append('status', formData.status);
 
       console.log('Form data being sent:', {
         language_id: formData.language_id,
         country_name: formData.country_name,
         // country_code: formData.country_code,
+        order: formData.order,
         status: formData.status,
         hasFlagImage: !!selectedImage,
         hasMapImage: !!selectedMapImage
@@ -564,6 +576,19 @@ function Countries() {
                         required
                       />
                     </div> */}
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Order
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.order}
+                        onChange={(e) => setFormData({ ...formData, order: e.target.value })}
+                        className="input-field text-gray-700"
+                        required
+                      />
+                    </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
