@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import SelectSearch from 'react-select-search';
+import 'react-select-search/style.css'
 
 const DataTable = ({
   data,
@@ -17,8 +19,11 @@ const DataTable = ({
   currentPage = 1,
   itemsPerPage = 10,
   onSearch,
+  allSubCategoryList,
+  subCategoryData
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectAllSubCategoryList, setSelectAllSubCategoryList] = useState('');
 
   // Use server-side pagination if available, otherwise use client-side
   const isServerSidePagination = pagination && onPageChange;
@@ -100,10 +105,24 @@ const DataTable = ({
             </div>
           )}
 
+          {title === 'Content' &&
+            <div className='md:mb-0 mb-3'>
+              <SelectSearch
+                search={true}
+                options={allSubCategoryList}
+                value={selectAllSubCategoryList}
+                onChange={((e) => {
+                  console.log('category=================>', e)
+                  setSelectAllSubCategoryList(e)
+                  subCategoryData(e)
+                })}
+                name="language" placeholder="Search sub categories" />
+            </div>}
+
           {showAddButton && onAdd && (
             <button
               onClick={onAdd}
-              className="btn-primary flex items-center space-x-2"
+              className="btn-primary flex items-center space-x-2 w-[170px]"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

@@ -46,7 +46,7 @@ export const updateSubCategoryWithImage = (id, formData) => ApiFormData('put', `
 export const deleteSubCategory = (id) => Api('delete', `subcategories/${id}`);
 
 // Content
-export const fetchContent = (page = 1, limit = 10) => Api('get', `content?page=${page}&limit=${limit}`);
+export const fetchContent = (page = 1, limit = 10, subCategory = '') => Api('get', `content?page=${page}&limit=${limit}&subCategory=${subCategory}`);
 export const createContent = (data) => Api('post', 'content', data);
 export const updateContent = (id, data) => Api('put', `content/${id}`, data);
 export const deleteContent = (id) => Api('delete', `content/${id}`);

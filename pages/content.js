@@ -150,7 +150,8 @@ function Content() {
       }
 
       if (allSubCategoryResponse.success) {
-        setAllSubCategoryList(allSubCategoryResponse.data || []);
+        const data = allSubCategoryResponse.data.map(f => { return { ...f, value: f._id } })
+        setAllSubCategoryList(data || []);
       }
     } catch (err) {
       console.error('Error loading data:', err);
@@ -184,7 +185,6 @@ function Content() {
       key: 'country',
       label: 'Country',
       render: (value) => (
-        console.log(value),
         <div>
           <div className="font-medium text-gray-900">{value?.country_name || ''}</div>
           {/* <div className="text-sm text-gray-500">{value?.country_code || ''}</div> */}
@@ -195,7 +195,6 @@ function Content() {
       key: 'super_category_id',
       label: 'Super Category',
       render: (value) => (
-        console.log(value),
         <div>
           <div className="font-medium text-gray-900">{value?.name || ''}</div>
           {/* <div className="text-sm text-gray-500 max-w-xs truncate">
@@ -208,7 +207,6 @@ function Content() {
       key: 'category_id',
       label: 'Category',
       render: (value) => (
-        console.log(value),
         <div>
           <div className="font-medium text-gray-900">{value?.name || ''}</div>
           <div className="text-sm text-gray-500">{value?.status || ''}</div>
@@ -475,6 +473,16 @@ function Content() {
         onPageChange={handlePageChange}
         currentPage={currentPage}
         showSearch={false}
+        allSubCategoryList={allSubCategoryList}
+        subCategoryData={async (e) => {
+          const contentResponse = await fetchContent(1, 10, e); console.log(contentResponse)
+          if (contentResponse.success) {
+            console.log('Content Data:', contentResponse.data);
+            console.log('First content item:', contentResponse.data[0]);
+            setContent(contentResponse.data || []);
+            setPagination(contentResponse.pagination || null);
+          }
+        }}
       />
 
       {/* Add/Edit Modal */}

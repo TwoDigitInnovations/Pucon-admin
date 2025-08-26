@@ -20,7 +20,8 @@
     background: var(--background);
     color: var(--foreground);
     font-family: Arial, Helvetica, sans-serif;
-    overflow-x: hidden; /* Prevent horizontal scroll */
+    overflow-x: hidden;
+    /* Prevent horizontal scroll */
   }
 
   /* Ensure sidebar stays fixed */
@@ -34,7 +35,8 @@
 
   /* Ensure main content doesn't overlap sidebar */
   .main-content {
-    margin-left: 16rem; /* 256px = 16rem */
+    margin-left: 16rem;
+    /* 256px = 16rem */
   }
 
   @media (max-width: 1023px) {
@@ -48,35 +50,35 @@
   .sidebar-transition {
     @apply transition-all duration-300 ease-in-out;
   }
-  
+
   .table-row-hover {
     @apply hover:bg-gray-50 transition-colors duration-200;
   }
-  
+
   .btn-primary {
     @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
   }
-  
+
   .btn-secondary {
     @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors duration-200;
   }
-  
+
   .btn-danger {
     @apply bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
   }
-  
+
   .card {
     @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
   }
-  
+
   .input-field {
     @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
   }
-  
+
   .status-active {
     @apply bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium;
   }
-  
+
   .status-inactive {
     @apply bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium;
   }
@@ -105,7 +107,8 @@
   outline: none;
   min-height: 200px;
   padding: 1rem;
-  color: #1f2937; /* text-gray-800 equivalent */
+  color: #1f2937;
+  /* text-gray-800 equivalent */
 }
 
 .ProseMirror p.is-editor-empty:first-child::before {
@@ -215,4 +218,105 @@
 
 .ProseMirror [data-font-family="Papyrus, fantasy"] {
   font-family: Papyrus, fantasy;
+}
+
+/* -------------- */
+
+.select-search-container {
+  --select-search-background: #fff;
+  --select-search-border: #dce0e8;
+  --select-search-selected: #1e66f5;
+  --select-search-text: #000;
+  --select-search-subtle-text: #6c6f85;
+  --select-search-inverted-text: var(--select-search-background);
+  --select-search-highlight: #eff1f5;
+  --select-search-font: 'Inter', sans-serif;
+  width: 100% !important;
+  position: relative;
+  font-family: var(--select-search-font);
+  color: var(--select-search-text);
+  box-sizing: border-box;
+}
+
+.select-search-input {
+  position: relative;
+  z-index: 1;
+  display: block;
+  height: 40px !important;
+  width: 100% !important;
+  padding: 0 40px 0 16px;
+  background: var(--select-search-background);
+  border: 1px solid #E2E2E2 !important;
+  color: var(--select-search-text);
+  border-radius: 3px;
+  outline: none;
+  font-family: var(--select-search-font);
+  font-size: 16px;
+  text-align: left;
+  text-overflow: ellipsis;
+  line-height: 48px;
+  letter-spacing: 0.01rem;
+  -webkit-appearance: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.select-search-input {
+  position: relative;
+  z-index: 1;
+  display: block;
+  height: 48px;
+  width: 100%;
+  padding: 0 40px 0 16px;
+  background: #ffffff !important;
+  border: 2px solid var(--select-search-border);
+  color: var(--select-search-text);
+  border-radius: 8px !important;
+  outline: none;
+  font-family: var(--select-search-font);
+  font-size: 16px;
+  text-align: left;
+  text-overflow: ellipsis;
+  line-height: 48px;
+  letter-spacing: 0.01rem;
+  -webkit-appearance: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.select-search-container {
+  --select-search-background: white !important;
+  --select-search-border: #313244;
+  --select-search-selected: #89b4fa;
+  --select-search-text: black !important;
+  --select-search-subtle-text: #a6adc8;
+  --select-search-highlight: #1e1e2e;
+}
+
+.select-search-container .select-search-has-focus {
+  background: white !important;
+}
+
+.select-search-option {
+  background: white !important;
+}
+
+.select-search-input {
+  z-index: 1;
+  background: var(--select-search-background);
+  border: 2px solid var(--select-search-border);
+  width: 100%;
+  height: 40px !important;
+  color: var(--select-search-text);
+  font-family: var(--select-search-font);
+  text-align: left;
+  text-overflow: ellipsis;
+  letter-spacing: .01rem;
+  -webkit-appearance: none;
+  -webkit-font-smoothing: antialiased;
+  border-radius: 8px !important;
+  outline: none;
+  padding: 0 40px 0 16px;
+  font-size: 16px;
+  line-height: 48px;
+  display: block;
+  position: relative;
 }
