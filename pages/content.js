@@ -77,6 +77,7 @@ function Content() {
   const [allSuperCategoryList, setAllSuperCategoryList] = useState([]);
   const [allCategoryList, setAllCategoryList] = useState([]);
   const [allSubCategoryList, setAllSubCategoryList] = useState([]);
+  const [subCategoryValue, setSubCategoryValue] = useState('');
 
   // Fetch all data on component mount
   useEffect(() => {
@@ -286,7 +287,14 @@ function Content() {
 
   const handlePageChange = async (page) => {
     setCurrentPage(page);
-    await loadData(page);
+    const contentResponse = await fetchContent(page, 10, subCategoryValue); console.log(contentResponse)
+    if (contentResponse.success) {
+      console.log('Content Data:', contentResponse.data);
+      console.log('First content item:', contentResponse.data[0]);
+      setContent(contentResponse.data || []);
+      setPagination(contentResponse.pagination || null);
+    }
+    // await loadData(page);
   };
 
   const handleDelete = async (item) => {
@@ -476,6 +484,7 @@ function Content() {
         allSubCategoryList={allSubCategoryList}
         subCategoryData={async (e) => {
           const contentResponse = await fetchContent(1, 10, e); console.log(contentResponse)
+          setSubCategoryValue(e);
           if (contentResponse.success) {
             console.log('Content Data:', contentResponse.data);
             console.log('First content item:', contentResponse.data[0]);
