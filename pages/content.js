@@ -5,6 +5,7 @@ import Layout from '../components/Layout';
 import DataTable from '../components/DataTable';
 import { Eye } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { IoCloseCircleOutline } from "react-icons/io5";
 
 import {
   fetchContent,
@@ -64,7 +65,9 @@ function Content() {
     category_id: '',
     sub_category_id: '',
     content: '',
-    status: 'active'
+    status: 'active',
+    logo: '',
+    carouselImage: [],
   });
   const [editorContent, setEditorContent] = useState('');
   const [fullScreenContent, setFullScreenContent] = useState('');
@@ -78,6 +81,13 @@ function Content() {
   const [allCategoryList, setAllCategoryList] = useState([]);
   const [allSubCategoryList, setAllSubCategoryList] = useState([]);
   const [subCategoryValue, setSubCategoryValue] = useState('');
+
+  const [selectedLogo, setSelectedLogo] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
+
+  const [selectedCarouselImage, setSelectedCarouselImage] = useState([]);
+  const [carouselImage, setCarouselImage] = useState([]);
+  const [oldImages, setOldImages] = useState([])
 
   // Fetch all data on component mount
   useEffect(() => {
@@ -256,10 +266,12 @@ function Content() {
       category_id: '',
       sub_category_id: '',
       content: '',
-      status: 'active'
+      status: 'active',
+      logo: '',
     });
     setEditorContent('');
     setShowModal(true);
+    setOldImages([])
   };
 
   const handleEdit = (item) => {
@@ -279,9 +291,12 @@ function Content() {
       category_id: typeof item.category_id === 'object' ? item.category_id?._id : item.category_id,
       sub_category_id: typeof item.sub_category_id === 'object' ? item.sub_category_id._id : item.sub_category_id,
       content: item.content,
-      status: item.status
+      status: item.status,
     });
     setEditorContent(item.content || '');
+    setLogoPreview(item.logo || null);
+    // setCarouselImage(item.carouselImage || []);
+    setOldImages(item.carouselImage || [])
     setShowModal(true);
   };
 
@@ -344,33 +359,63 @@ function Content() {
       // Debug: Log current state
       console.log('=== SUBMIT DEBUG ===');
       console.log('Current editorContent:', editorContent);
-      console.log('Current formData.content:', formData.content);
+      console.log('Current formData.content:', formData);
       console.log('=== END SUBMIT DEBUG ===');
 
       // Create the final form data with current editor content
       let contentToUse = editorContent;
 
       // If editorContent is empty, try formData.content
-      if (!contentToUse) {
-        contentToUse = formData.content;
-        console.log('Using formData.content as fallback:', contentToUse);
+      // if (!contentToUse) {
+      //   contentToUse = formData.content;
+      //   console.log('Using formData.content as fallback:', contentToUse);
+      // }
+
+      // const finalFormData = {
+      //   ...formData,
+      //   content: contentToUse,
+      // };
+
+      const finalFormData = new FormData();
+      finalFormData.append('language_id', formData.language_id);
+      finalFormData.append('country', formData.country);
+      finalFormData.append('super_category_id', formData.super_category_id);
+      finalFormData.append('category_id', formData.category_id);
+      finalFormData.append('sub_category_id', formData.sub_category_id);
+      finalFormData.append('status', formData.status);
+      finalFormData.append('content', editorContent);
+      finalFormData.append('oldImages', JSON.stringify(oldImages));
+
+      if (selectedLogo) {
+        // console.log('Adding image to FormData:', selectedImage.name, selectedImage.size);
+        finalFormData.append('logo', selectedLogo);
+      } else {
+        console.log('No logo selected');
       }
 
-      const finalFormData = {
-        ...formData,
-        content: contentToUse
-      };
+      for (let i = 0; i < selectedCarouselImage.length; i++) {
+        finalFormData.append('carouselImage', selectedCarouselImage[i]);
+      }
 
+      // if (selectedCarouselImage) {
+      //   finalFormData.append('carouselImage', selectedCarouselImage);
+      // } else {
+      //   console.log('No carousel image selected');
+      // }
+
+      console.log(formData)
+      // return
       // Validate that content is not empty
-      if (!finalFormData.content || finalFormData.content.trim() === '') {
-        console.log('Content validation failed - content is empty');
-        Swal.fire(
-          'Error!',
-          'Please enter some content before submitting.',
-          'error'
-        );
-        return;
-      }
+
+      // if (!finalFormData.content || finalFormData.content.trim() === '') {
+      //   console.log('Content validation failed - content is empty');
+      //   Swal.fire(
+      //     'Error!',
+      //     'Please enter some content before submitting.',
+      //     'error'
+      //   );
+      //   return;
+      // }
 
       console.log('=== FRONTEND CONTENT DEBUG ===');
       console.log('Editor content:', editorContent);
@@ -391,9 +436,12 @@ function Content() {
 
       if (response.success) {
         setShowModal(false);
+        clearImage();
         // Reset editor content after successful save
         setEditorContent('');
-
+        setSelectedCarouselImage([]);
+        setCarouselImage([]);
+        setOldImages([]);
         // Update the content array with the new/updated data
         if (editingItem) {
           // Update existing item
@@ -428,6 +476,84 @@ function Content() {
         'error'
       );
     }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        Swal.fire('Error!', 'Please select an image file', 'error');
+        return;
+      }
+
+      // Validate file size (10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        Swal.fire('Error!', 'Image size should be less than 10MB', 'error');
+        return;
+      }
+
+      setSelectedLogo(file);
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setLogoPreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const clearImage = () => {
+    setSelectedLogo(null);
+    setLogoPreview(null);
+  };
+
+  const handleCarouselImageChange = (e) => {
+    console.log(e?.target?.files)
+    const file = e.target.files;
+    console.log(file)
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        Swal.fire('Error!', 'Image size should be less than 10MB', 'error');
+        return;
+      }
+
+      setSelectedCarouselImage([...file]);
+      console.log(file.FileList)
+      let imageArry = []
+      for (let i = 0; i < file.length; i++) {
+        console.log(file[i]);
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          console.log(e)
+          imageArry.push(e.target.result)
+          console.log(imageArry)
+          setCarouselImage(imageArry)
+        };
+        reader.readAsDataURL(file[i]);
+
+      }
+
+
+    }
+  };
+
+  const carouselImageCloseIcon = (item, i) => {
+    console.log(item, i);
+    // let data = carouselImage;
+    let data = oldImages;
+    if (i > -1) {
+      data.splice(i, 1);
+    }
+    console.log(data);
+    // setCarouselImage([...carouselImage]);
+    setOldImages([...oldImages])
+    let datas = selectedCarouselImage;
+    if (i > -1) {
+      datas.splice(i, 1);
+    }
+    setSelectedCarouselImage([...selectedCarouselImage]);
   };
 
   if (loading) {
@@ -623,6 +749,72 @@ function Content() {
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
                       </select>
+                    </div>
+
+                    <div className='w-full'>
+                      <div className='w-full'>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Logo
+                        </label>
+                        <div className="flex items-center space-x-4">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className="input-field text-gray-700"
+                          />
+                        </div>
+                      </div>
+                      {logoPreview && (
+                        <div className="flex items-center space-x-2 mt-5">
+                          <img src={logoPreview} alt="Preview" className="w-16 h-16 object-cover rounded-md" />
+                          <button
+                            type="button"
+                            onClick={clearImage}
+                            className="btn-secondary btn-sm"
+                          >
+                            Clear Image
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className='w-full'>
+                      <div className='w-full'>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Carousel Image
+                        </label>
+                        <div className="flex items-center space-x-4">
+                          <input
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            onChange={handleCarouselImageChange}
+                            className="input-field text-gray-700"
+                          />
+                        </div>
+                      </div>
+                      {carouselImage && (
+                        <div className="flex items-center space-x-2 mt-5">
+                          {[...carouselImage, ...oldImages].map((item, i) => (<div key={i} className='w-16 h-16 relative'>
+                            <img src={item} alt="Preview" className="w-16 h-16 object-cover rounded-md" />
+                            <IoCloseCircleOutline
+                              className="text-red-700 cursor-pointer h-5 w-5 absolute top-0 right-0"
+                              onClick={() => {
+                                carouselImageCloseIcon(item, i)
+                              }}
+                            />
+                          </div>))}
+
+                          {/* <button
+                            type="button"
+                            onClick={clearImage}
+                            className="btn-secondary btn-sm"
+                          >
+                            Clear Image
+                          </button> */}
+                        </div>
+                      )}
                     </div>
                   </div>
 

@@ -47,8 +47,8 @@ export const deleteSubCategory = (id) => Api('delete', `subcategories/${id}`);
 
 // Content
 export const fetchContent = (page = 1, limit = 10, subCategory = '') => Api('get', `content?page=${page}&limit=${limit}&subCategory=${subCategory}`);
-export const createContent = (data) => Api('post', 'content', data);
-export const updateContent = (id, data) => Api('put', `content/${id}`, data);
+export const createContent = (formData) => Api('post', 'content', formData);
+export const updateContent = (id, formData) => Api('put', `content/${id}`, formData);
 export const deleteContent = (id) => Api('delete', `content/${id}`);
 
 // user

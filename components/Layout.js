@@ -69,6 +69,12 @@ const Layout = ({ children }) => {
       icon: <FileText className="w-5 h-5 mr-3" />, // Lucide FileText
       current: router.pathname === '/content'
     },
+    // {
+    //   name: 'Carousel',
+    //   href: '/carousel',
+    //   icon: <FileText className="w-5 h-5 mr-3" />, // Lucide FileText
+    //   current: router.pathname === '/carousel'
+    // },
   ];
 
   return (
