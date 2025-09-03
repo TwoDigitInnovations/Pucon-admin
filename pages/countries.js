@@ -244,25 +244,6 @@ function Countries() {
     setShowModal(true);
   };
 
-  const handlePageChange = async (page) => {
-    setCurrentPage(page);
-    await loadData(page);
-  };
-
-  const onSearch = async (e) => {
-    console.log(e)
-    const [countriesResponse] = await Promise.all([
-      fetchCountries(1, 10, e),
-    ]);
-
-    if (countriesResponse.success) {
-      setCountries(countriesResponse.data || []);
-      setPagination(countriesResponse.pagination || null);
-    } else {
-      setError(countriesResponse.message || 'Failed to load countries');
-    }
-  }
-
   const handleDelete = async (item) => {
     const result = await Swal.fire({
       title: 'Are you sure?',
@@ -291,6 +272,27 @@ function Countries() {
       }
     }
   };
+
+  const handlePageChange = async (page) => {
+    setCurrentPage(page);
+    await loadData(page);
+  };
+
+  const onSearch = async (e) => {
+    console.log(e)
+    const [countriesResponse] = await Promise.all([
+      fetchCountries(1, 10, e),
+    ]);
+
+    if (countriesResponse.success) {
+      setCountries(countriesResponse.data || []);
+      setPagination(countriesResponse.pagination || null);
+    } else {
+      setError(countriesResponse.message || 'Failed to load countries');
+    }
+  }
+
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();

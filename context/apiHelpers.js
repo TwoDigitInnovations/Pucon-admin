@@ -53,3 +53,9 @@ export const deleteContent = (id) => Api('delete', `content/${id}`);
 
 // user
 export const login = (data) => Api('post', 'user/login', data);
+
+// carousel
+export const getAllCarousel = (page = 1, limit = 10, search = '') => Api('get', `carousel/getAllCarousel?page=${page}&limit=${limit}&search=${search}`);
+export const createCarousel = (formData) => ApiFormData('post', 'carousel/createCarousel', formData);
+export const updateCarousel = (id, formData) => ApiFormData('put', `carousel/updateCarousel/${id}`, formData);
+export const deleteCarousel = (id) => Api('delete', `carousel/deleteCarousel/${id}`);
