@@ -13,6 +13,7 @@ import {
 import { useAppContext } from '@/context/AppContext';
 import { PiSignOutFill } from "react-icons/pi";
 import Swal from "sweetalert2";
+import { TbBuildingCarousel } from "react-icons/tb";
 
 const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -72,7 +73,7 @@ const Layout = ({ children }) => {
     {
       name: 'Carousel',
       href: '/carousel',
-      icon: <FileText className="w-5 h-5 mr-3" />, // Lucide FileText
+      icon: <TbBuildingCarousel className="w-5 h-5 mr-3" />, // Lucide FileText
       current: router.pathname === '/carousel'
     },
   ];
