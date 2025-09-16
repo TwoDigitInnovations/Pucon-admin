@@ -161,7 +161,7 @@ function Content() {
       }
 
       if (allSubCategoryResponse.success) {
-        const data = allSubCategoryResponse.data.map(f => { return { ...f, value: f._id } })
+        const data = allSubCategoryResponse.data.map(f => { return { ...f, value: f?._id } })
         setAllSubCategoryList(data || []);
       }
     } catch (err) {
@@ -284,12 +284,12 @@ function Content() {
 
     setEditingItem(item);
     setFormData({
-      language_id: typeof item.language_id === 'object' ? item.language_id._id : item.language_id,
+      language_id: typeof item.language_id === 'object' ? item.language_id?._id : item.language_id,
       // country_id: typeof item.country_id === 'object' ? item.country_id._id : item.country_id,
       country: typeof item.country === 'object' ? item.country?._id : item.country,
       super_category_id: typeof item.super_category_id === 'object' ? item.super_category_id?._id : item.super_category_id,
       category_id: typeof item.category_id === 'object' ? item.category_id?._id : item.category_id,
-      sub_category_id: typeof item.sub_category_id === 'object' ? item.sub_category_id._id : item.sub_category_id,
+      sub_category_id: typeof item.sub_category_id === 'object' ? item.sub_category_id?._id : item.sub_category_id,
       content: item.content,
       status: item.status,
     });
@@ -426,7 +426,7 @@ function Content() {
 
       if (editingItem) {
         // Update existing item
-        response = await updateContent(editingItem._id, finalFormData);
+        response = await updateContent(editingItem?._id, finalFormData);
         console.log('Update response:', response);
       } else {
         // Add new item
@@ -650,7 +650,7 @@ function Content() {
                       >
                         <option value="">Select Language</option>
                         {allLanguages.map((language) => (
-                          <option key={language._id} value={language._id}>
+                          <option key={language?._id} value={language?._id}>
                             {language.language_name} ({language.language_code})
                           </option>
                         ))}
@@ -668,9 +668,9 @@ function Content() {
                         required
                       >
                         {/* <option value="">Select Country</option> */}
-                        <option value="">{allCountryList.filter(f => f.language_id._id === formData.language_id).length > 0 ? 'Select Country' : 'No Country Available'}</option>
-                        {allCountryList.filter(f => f.language_id._id === formData.language_id).map((country) => (
-                          <option key={country._id} value={country._id}>
+                        <option value="">{allCountryList.filter(f => f.language_id?._id === formData.language_id).length > 0 ? 'Select Country' : 'No Country Available'}</option>
+                        {allCountryList.filter(f => f.language_id?._id === formData.language_id).map((country) => (
+                          <option key={country?._id} value={country?._id}>
                             {country.country_name}
                           </option>
                         ))}
@@ -690,7 +690,7 @@ function Content() {
                         {/* <option value="">Select Super Category</option> */}
                         <option value="">{allSuperCategoryList.filter(f => f.country?._id === formData.country).length > 0 ? 'Select Super Category' : 'No Super Category Available'}</option>
                         {allSuperCategoryList.filter(f => f.country?._id === formData.country).map((superCat) => (
-                          <option key={superCat._id} value={superCat._id}>
+                          <option key={superCat?._id} value={superCat?._id}>
                             {superCat.name}
                           </option>
                         ))}
@@ -708,9 +708,9 @@ function Content() {
                         required
                       >
                         {/* <option value="">Select Category</option> */}
-                        <option value="">{allCategoryList.filter(f => f.super_category_id._id === formData.super_category_id).length > 0 ? 'Select Category' : 'No Category Available'}</option>
-                        {allCategoryList.filter(f => f.super_category_id._id === formData.super_category_id).map((category) => (
-                          <option key={category._id} value={category._id}>
+                        <option value="">{allCategoryList.filter(f => f.super_category_id?._id === formData.super_category_id).length > 0 ? 'Select Category' : 'No Category Available'}</option>
+                        {allCategoryList.filter(f => f.super_category_id?._id === formData.super_category_id).map((category) => (
+                          <option key={category?._id} value={category?._id}>
                             {category.name}
                           </option>
                         ))}
@@ -730,7 +730,7 @@ function Content() {
                         {/* <option value="">Select Sub Category</option> */}
                         <option value="">{allSubCategoryList.filter(f => f.category_id?._id === formData.category_id).length > 0 ? 'Select Sub Category' : 'No Sub Category Available'}</option>
                         {allSubCategoryList.filter(f => f.category_id?._id === formData.category_id).map((subCat) => (
-                          <option key={subCat._id} value={subCat._id}>
+                          <option key={subCat?._id} value={subCat?._id}>
                             {subCat.name}
                           </option>
                         ))}
