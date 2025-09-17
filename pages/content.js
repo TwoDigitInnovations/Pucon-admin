@@ -529,7 +529,7 @@ function Content() {
           console.log(e)
           imageArry.push(e.target.result)
           console.log(imageArry)
-          setCarouselImage(imageArry)
+          setCarouselImage([...carouselImage, ...imageArry])
         };
         reader.readAsDataURL(file[i]);
 
