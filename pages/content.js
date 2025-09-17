@@ -92,6 +92,7 @@ function Content() {
   // Fetch all data on component mount
   useEffect(() => {
     loadData();
+    loadAnotherData()
   }, []);
 
   const loadData = async (page = 1) => {
@@ -101,18 +102,8 @@ function Content() {
 
       // Fetch all required data
       const [
-        contentResponse, languagesResponse, countriesResponse, superCategoriesResponse, categoriesResponse, subCategoriesResponse, allLanguagessResponse, allCountryResponse, allSuperCategoryResponse, allCategoryResponse, allSubCategoryResponse] = await Promise.all([
+        contentResponse] = await Promise.all([
           fetchContent(page, 10),
-          fetchLanguages(),
-          fetchCountries(),
-          fetchSuperCategories(),
-          fetchCategories(),
-          fetchSubCategories(),
-          getAllLanguagess(),
-          getAllCountry(),
-          getAllSuperCategory(),
-          getAllCategory(),
-          getAllSubCategory(),
         ]);
 
       if (contentResponse.success) {
@@ -123,26 +114,27 @@ function Content() {
       } else {
         setError(contentResponse.message || 'Failed to load content');
       }
+    } catch (err) {
+      console.error('Error loading data:', err);
+      setError(err.message || 'Failed to load data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      if (languagesResponse.success) {
-        setLanguages(languagesResponse.data || []);
-      }
+  const loadAnotherData = async () => {
+    try {
+      setError(null);
 
-      if (countriesResponse.success) {
-        setCountries(countriesResponse.data || []);
-      }
-
-      if (superCategoriesResponse.success) {
-        setSuperCategories(superCategoriesResponse.data || []);
-      }
-
-      if (categoriesResponse.success) {
-        setCategories(categoriesResponse.data || []);
-      }
-
-      if (subCategoriesResponse.success) {
-        setSubCategories(subCategoriesResponse.data || []);
-      }
+      // Fetch all required data
+      const [
+        allLanguagessResponse, allCountryResponse, allSuperCategoryResponse, allCategoryResponse, allSubCategoryResponse] = await Promise.all([
+          getAllLanguagess(),
+          getAllCountry(),
+          getAllSuperCategory(),
+          getAllCategory(),
+          getAllSubCategory(),
+        ]);
 
       if (allLanguagessResponse.success) {
         setAllLanguages(allLanguagessResponse.data || []);
@@ -297,6 +289,7 @@ function Content() {
     setLogoPreview(item.logo || null);
     // setCarouselImage(item.carouselImage || []);
     setOldImages(item.carouselImage || [])
+    setCarouselImage(item.carouselImage.map(f => ({ base: f })))
     setShowModal(true);
   };
 
@@ -393,8 +386,11 @@ function Content() {
         console.log('No logo selected');
       }
 
-      for (let i = 0; i < selectedCarouselImage.length; i++) {
-        finalFormData.append('carouselImage', selectedCarouselImage[i]);
+      for (let i = 0; i < carouselImage.length; i++) {
+        if (carouselImage[i].file) {
+          finalFormData.append('carouselImage', carouselImage[i].file);
+        }
+
       }
 
       // if (selectedCarouselImage) {
@@ -527,7 +523,7 @@ function Content() {
         const reader = new FileReader();
         reader.onload = (e) => {
           console.log(e)
-          imageArry.push(e.target.result)
+          imageArry.push({ base: e.target.result, file: file[i] })
           console.log(imageArry)
           setCarouselImage([...carouselImage, ...imageArry])
         };
@@ -543,17 +539,19 @@ function Content() {
     console.log(item, i);
     // let data = carouselImage;
     let data = oldImages;
+    console.log(data);
     if (i > -1) {
       data.splice(i, 1);
     }
     console.log(data);
     // setCarouselImage([...carouselImage]);
-    setOldImages([...oldImages])
-    let datas = selectedCarouselImage;
+    setOldImages([...data])
+    let datas = carouselImage;
     if (i > -1) {
       datas.splice(i, 1);
     }
-    setSelectedCarouselImage([...selectedCarouselImage]);
+    console.log(datas);
+    setCarouselImage([...datas]);
   };
 
   if (loading) {
@@ -796,8 +794,8 @@ function Content() {
                       </div>
                       {carouselImage && (
                         <div className="flex items-center space-x-2 mt-5">
-                          {[...carouselImage, ...oldImages].map((item, i) => (<div key={i} className='w-16 h-16 relative'>
-                            <img src={item} alt="Preview" className="w-16 h-16 object-cover rounded-md" />
+                          {[...carouselImage].map((item, i) => (<div key={i} className='w-16 h-16 relative'>
+                            <img src={item?.base} alt="Preview" className="w-16 h-16 object-cover rounded-md" />
                             <IoCloseCircleOutline
                               className="text-red-700 cursor-pointer h-5 w-5 absolute top-0 right-0"
                               onClick={() => {
